@@ -62,26 +62,26 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Pushbot: encoder test", group="Pushbot")
+@Autonomous(name="encoderLiftTest", group="Linear OpMode")
 //@Disabled
 public class encoderLiftTest extends LinearOpMode {
 
     /* Declare OpMode members. */
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive   = null;
-    private DcMotor rightDrive  = null;
-    private DcMotor leftDrive2  = null;
-    private DcMotor rightDrive2 = null;
-    private DcMotor pulley      = null;
-    private Servo rightServo  = null;
-    private Servo   leftServo   = null;
+    private DcMotor LeftDriveFront   = null;
+    private DcMotor RightDriveFront  = null;
+    private DcMotor LeftDriveBack    = null;
+    private DcMotor RightDriveBack   = null;
+    private DcMotor Pulley           = null;
+    private Servo   RightServo       = null;
+    private Servo   LeftServo        = null;
 
-    static final double     COUNTS_PER_MOTOR_REV    = 1440 ;    // eg: TETRIX Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
+    static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: TETRIX Motor Encoder
+    static final double     DRIVE_GEAR_REDUCTION    = 1 ;     // This is < 1.0 if geared UP
+    static final double     WHEEL_DIAMETER_INCHES   = 3.875 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-            (WHEEL_DIAMETER_INCHES * 3.1415);
+                                                        (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
 
@@ -96,16 +96,16 @@ public class encoderLiftTest extends LinearOpMode {
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
 
-         leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-         rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+         LeftDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+         RightDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-         leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+         LeftDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+         RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Path0",  "Starting at %7d :%7d",
-                 leftDrive.getCurrentPosition(),
-                 rightDrive.getCurrentPosition());
+                 LeftDriveFront.getCurrentPosition(),
+                 RightDriveFront.getCurrentPosition());
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
@@ -117,8 +117,8 @@ public class encoderLiftTest extends LinearOpMode {
         encoderDrive(TURN_SPEED,   12, -12, 4.0);  // S2: Turn Right 12 Inches with 4 Sec timeout
         encoderDrive(DRIVE_SPEED, -24, -24, 4.0);  // S3: Reverse 24 Inches with 4 Sec timeout
 
-         leftServo.setPosition(1.0);            // S4: Stop and close the claw.
-         rightServo.setPosition(0.0);
+         LeftServo.setPosition(1.0);            // S4: Stop and close the claw.
+         RightServo.setPosition(0.0);
         sleep(1000);     // pause for servos to move
 
         telemetry.addData("Path", "Complete");
@@ -143,19 +143,19 @@ public class encoderLiftTest extends LinearOpMode {
         if (opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
-            newLeftTarget =  leftDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightTarget =  rightDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-             leftDrive.setTargetPosition(newLeftTarget);
-             rightDrive.setTargetPosition(newRightTarget);
+            newLeftTarget =  LeftDriveFront.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
+            newRightTarget =  RightDriveFront.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+             LeftDriveFront.setTargetPosition(newLeftTarget);
+             RightDriveFront.setTargetPosition(newRightTarget);
 
             // Turn On RUN_TO_POSITION
-             leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-             rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+             LeftDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+             RightDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             // reset the timeout time and start motion.
             runtime.reset();
-             leftDrive.setPower(Math.abs(speed));
-             rightDrive.setPower(Math.abs(speed));
+             LeftDriveFront.setPower(Math.abs(speed));
+             RightDriveFront.setPower(Math.abs(speed));
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
@@ -165,23 +165,23 @@ public class encoderLiftTest extends LinearOpMode {
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
             while (opModeIsActive() &&
                     (runtime.seconds() < timeoutS) &&
-                    ( leftDrive.isBusy() &&  rightDrive.isBusy())) {
+                    ( LeftDriveFront.isBusy() &&  RightDriveFront.isBusy())) {
 
                 // Display it for the driver.
                 telemetry.addData("Path1",  "Running to %7d :%7d", newLeftTarget,  newRightTarget);
                 telemetry.addData("Path2",  "Running at %7d :%7d",
-                         leftDrive.getCurrentPosition(),
-                         rightDrive.getCurrentPosition());
+                         LeftDriveFront.getCurrentPosition(),
+                         RightDriveFront.getCurrentPosition());
                 telemetry.update();
             }
 
             // Stop all motion;
-             leftDrive.setPower(0);
-             rightDrive.setPower(0);
+             LeftDriveFront.setPower(0);
+             RightDriveFront.setPower(0);
 
             // Turn off RUN_TO_POSITION
-             leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-             rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+             LeftDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+             RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             //  sleep(250);   // optional pause after each move
         }

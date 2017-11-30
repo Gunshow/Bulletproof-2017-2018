@@ -57,11 +57,11 @@ public class Main6712TC extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive   = null;
-    private DcMotor rightDrive  = null;
-    private DcMotor leftDrive2  = null;
-    private DcMotor rightDrive2 = null;
-    private DcMotor pulley      = null;
+    private DcMotor LeftDriveFront   = null;
+    private DcMotor RightDriveFront  = null;
+    private DcMotor LeftDriveBack  = null;
+    private DcMotor RightDriveBack = null;
+    private DcMotor Pulley      = null;
     private Servo   rightServo  = null;
     private Servo   leftServo   = null;
 
@@ -74,20 +74,20 @@ public class Main6712TC extends LinearOpMode {
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
         // Motors labeled if your looking at the FRONT of the robot
-        leftDrive   = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive  = hardwareMap.get(DcMotor.class, "right_drive");
-        leftDrive2  = hardwareMap.get(DcMotor.class, "left_drive2");
-        rightDrive2 = hardwareMap.get(DcMotor.class, "right_drive2");
-        pulley      = hardwareMap.get(DcMotor.class, "pulley");
+        LeftDriveFront   = hardwareMap.get(DcMotor.class, "left_drive");
+        RightDriveFront  = hardwareMap.get(DcMotor.class, "right_drive");
+        LeftDriveBack  = hardwareMap.get(DcMotor.class, "left_drive2");
+        RightDriveBack = hardwareMap.get(DcMotor.class, "right_drive2");
+        Pulley      = hardwareMap.get(DcMotor.class, "pulley");
         rightServo  = hardwareMap.get(Servo.class, "right_servo");
         leftServo   = hardwareMap.get(Servo.class, "left_servo");
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
-        leftDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
-        leftDrive2.setDirection(DcMotor.Direction.FORWARD);
-        rightDrive2.setDirection(DcMotor.Direction.REVERSE);
-        pulley.setDirection(DcMotor.Direction.REVERSE);
+        LeftDriveFront.setDirection(DcMotor.Direction.REVERSE);
+        RightDriveFront.setDirection(DcMotor.Direction.REVERSE);
+        LeftDriveBack.setDirection(DcMotor.Direction.FORWARD);
+        RightDriveBack.setDirection(DcMotor.Direction.REVERSE);
+        Pulley.setDirection(DcMotor.Direction.REVERSE);
         
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -131,11 +131,11 @@ public class Main6712TC extends LinearOpMode {
 
 
             // Send calculated power to wheels
-            leftDrive.setPower(leftPower);
-            rightDrive.setPower(rightPower);
-            leftDrive2.setPower(leftPower);
-            rightDrive2.setPower(rightPower);
-            pulley.setPower(pulleyPower);
+            LeftDriveFront.setPower(leftPower);
+            RightDriveFront.setPower(rightPower);
+            LeftDriveBack.setPower(leftPower);
+            RightDriveBack.setPower(rightPower);
+            Pulley.setPower(pulleyPower);
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
