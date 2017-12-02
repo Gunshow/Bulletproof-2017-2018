@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -84,8 +85,8 @@ public class Main6712TC extends LinearOpMode {
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         LeftDriveFront.setDirection(DcMotor.Direction.REVERSE);
-        RightDriveFront.setDirection(DcMotor.Direction.REVERSE);
-        LeftDriveBack.setDirection(DcMotor.Direction.FORWARD);
+        RightDriveFront.setDirection(DcMotor.Direction.FORWARD);
+        LeftDriveBack.setDirection(DcMotor.Direction.REVERSE);
         RightDriveBack.setDirection(DcMotor.Direction.REVERSE);
         Pulley.setDirection(DcMotor.Direction.REVERSE);
         
@@ -116,12 +117,12 @@ public class Main6712TC extends LinearOpMode {
             else
             if(gamepad1.left_bumper) {
                 // move to 0 degrees.
-                rightServo.setPosition(0.4);
-                leftServo.setPosition(.4);
+                rightServo.setPosition(0);
+                leftServo.setPosition(1);
             } else if (gamepad1.y) {
                 // move to 90 degrees.
-                rightServo.setPosition(0.6);
-                leftServo.setPosition(0.6);
+                rightServo.setPosition(0.5);
+                leftServo.setPosition(0.5);
             } else if (gamepad1.right_bumper) {
                 // move to 180 degrees.
                 rightServo.setPosition(1);

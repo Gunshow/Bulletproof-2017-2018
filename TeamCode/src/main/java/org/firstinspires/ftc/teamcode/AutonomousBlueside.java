@@ -68,10 +68,10 @@ import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 @Autonomous(name="AutiBlueSide", group="Pushbot")
 //@Disabled
 public class AutonomousBlueside extends LinearOpMode {
-    private DcMotor leftDrive   = null;
-    private DcMotor rightDrive  = null;
-    private DcMotor leftDrive2  = null;
-    private DcMotor rightDrive2 = null;
+    private DcMotor LeftDriveFront  = null;
+    private DcMotor RightDriveFront = null;
+    private DcMotor LeftDriveBack = null;
+    private DcMotor RightDriveBack = null;
     private DcMotor pulley      = null;
     private Servo rightServo  = null;
     private Servo   leftServo   = null;
@@ -92,10 +92,10 @@ public class AutonomousBlueside extends LinearOpMode {
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-        leftDrive   = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive  = hardwareMap.get(DcMotor.class, "right_drive");
-        leftDrive2  = hardwareMap.get(DcMotor.class, "left_drive2");
-        rightDrive2 = hardwareMap.get(DcMotor.class, "right_drive2");
+        LeftDriveFront  = hardwareMap.get(DcMotor.class, "left_drive");
+        RightDriveFront = hardwareMap.get(DcMotor.class, "right_drive");
+        LeftDriveBack = hardwareMap.get(DcMotor.class, "left_drive2");
+        RightDriveBack = hardwareMap.get(DcMotor.class, "right_drive2");
         pulley      = hardwareMap.get(DcMotor.class, "pulley");
         rightServo  = hardwareMap.get(Servo.class, "right_servo");
         leftServo   = hardwareMap.get(Servo.class, "left_servo");
@@ -109,22 +109,22 @@ public class AutonomousBlueside extends LinearOpMode {
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
 
-        leftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftDrive2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightDrive2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        LeftDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        RightDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        LeftDriveBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        RightDriveBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftDrive2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightDrive2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        LeftDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        LeftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        RightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Path0",  "Starting at %7d :%7d",
-                leftDrive.getCurrentPosition(),
-                rightDrive.getCurrentPosition(),
-                leftDrive2.getCurrentPosition(),
-                rightDrive2.getCurrentPosition());
+                LeftDriveFront.getCurrentPosition(),
+                RightDriveFront.getCurrentPosition(),
+                LeftDriveBack.getCurrentPosition(),
+                RightDriveBack.getCurrentPosition());
 
 
         telemetry.update();
@@ -134,9 +134,9 @@ public class AutonomousBlueside extends LinearOpMode {
 
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        sleep(5000);                                                 //S0:Wait 5 seconds to start
-        leftServo.setPosition(1.0);                                       // S1:Grab cube
-        rightServo.setPosition(0.0);
+        sleep(0000);                                                 //S0:Wait 5 seconds to start
+        leftServo.setPosition(.5);                                       // S1:Grab cube
+        rightServo.setPosition(.5);
         sleep(1000);                                                // pause for servos to move
         encoderDrive(DRIVE_SPEED,  36,36,   3.0); // S2: Drive to Glyph Box
         encoderDrive(TURN_SPEED,   -11.780972 , 11.708972, 2);     // S3: Turn towards glyph Box
@@ -164,30 +164,37 @@ public class AutonomousBlueside extends LinearOpMode {
     public void encoderDrive(double speed,
                              double leftInches, double rightInches,
                              double timeoutS) {
+
         int newLeftTarget;
         int newRightTarget;
-
+        int newLeftTarget2;
+        int newRightTarget2;
         // Ensure that the opmode is still active
         if (opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
-            newLeftTarget = leftDrive.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightTarget = rightDrive.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            leftDrive.setTargetPosition(newLeftTarget);
-            rightDrive.setTargetPosition(newRightTarget);
+
+            newLeftTarget = LeftDriveFront.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
+            newRightTarget = RightDriveFront.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+            newLeftTarget2 = LeftDriveBack.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
+            newRightTarget2 = RightDriveBack.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+            LeftDriveFront.setTargetPosition(newLeftTarget);
+            RightDriveFront.setTargetPosition(newRightTarget);
+            LeftDriveBack.setTargetPosition(newLeftTarget2);
+            RightDriveBack.setTargetPosition(newRightTarget2);
 
             // Turn On RUN_TO_POSITION
-            leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            leftDrive2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            rightDrive2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            LeftDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            RightDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            LeftDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            RightDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             // reset the timeout time and start motion.
             runtime.reset();
-            leftDrive.setPower(Math.abs(speed));
-            rightDrive.setPower(Math.abs(speed));
-            leftDrive2.setPower(Math.abs(speed));
-            rightDrive2.setPower(Math.abs(speed));
+            LeftDriveFront.setPower(Math.abs(speed));
+            RightDriveFront.setPower(Math.abs(speed));
+            LeftDriveBack.setPower(Math.abs(speed));
+            RightDriveBack.setPower(Math.abs(speed));
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
@@ -197,29 +204,31 @@ public class AutonomousBlueside extends LinearOpMode {
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
             while (opModeIsActive() &&
                     (runtime.seconds() < timeoutS) &&
-                    (leftDrive.isBusy() && rightDrive.isBusy())) {
+                    (LeftDriveFront.isBusy() && RightDriveFront.isBusy()
+                            && LeftDriveBack.isBusy() && RightDriveBack.isBusy())) {
 
                 // Display it for the driver.
-                telemetry.addData("Path1",  "Running to %7d :%7d", newLeftTarget,  newRightTarget);
+                telemetry.addData("Path1",  "Running to %7d :%7d", newLeftTarget,  newRightTarget,
+                                                                                    newLeftTarget2,  newRightTarget2);
                 telemetry.addData("Path2",  "Running at %7d :%7d",
-                        leftDrive.getCurrentPosition(),
-                        rightDrive.getCurrentPosition(),
-                        leftDrive2.getCurrentPosition(),
-                        rightDrive2.getCurrentPosition());
+                        LeftDriveFront.getCurrentPosition(),
+                        RightDriveFront.getCurrentPosition(),
+                        LeftDriveBack.getCurrentPosition(),
+                        RightDriveBack.getCurrentPosition());
                 telemetry.update();
             }
 
             // Stop all motion;
-            leftDrive.setPower(0);
-            rightDrive.setPower(0);
-            leftDrive2.setPower(0);
-            rightDrive2.setPower(0);
+            LeftDriveFront.setPower(0);
+            RightDriveFront.setPower(0);
+            LeftDriveBack.setPower(0);
+            RightDriveBack.setPower(0);
 
             // Turn off RUN_TO_POSITION
-            leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            leftDrive2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            rightDrive2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            LeftDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            LeftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            RightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             //  sleep(250);   // optional pause after each move
         }
