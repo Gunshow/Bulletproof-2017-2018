@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import android.graphics.Color;
 import android.hardware.Sensor;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -13,8 +14,8 @@ import org.firstinspires.ftc.robotcontroller.external.samples.SensorHTColor;
 /**
  * Created by brybr on 12/1/2017.
  */
-@TeleOp(name="Main6712TC ", group="Linear Opmode")
-//@Disabled
+@TeleOp(name="color sensor maybe ", group="Linear Opmode")
+@Disabled
 
 public class Colorsensortest extends LinearOpMode {
 

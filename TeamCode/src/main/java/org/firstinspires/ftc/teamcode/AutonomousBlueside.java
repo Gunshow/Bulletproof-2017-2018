@@ -81,8 +81,8 @@ public class AutonomousBlueside extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
 
     static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: TETRIX Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 1 ;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_INCHES   = 3.875 ;     // For figuring circumference
+    static final double     DRIVE_GEAR_REDUCTION    = .5 ;     // This is < 1.0 if geared UP
+    static final double     WHEEL_DIAMETER_INCHES   = 3.75 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
                                                         (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     DRIVE_SPEED             = 0.6;
@@ -104,7 +104,11 @@ public class AutonomousBlueside extends LinearOpMode {
          * The init() method of the hardware class does all the work here
          */
 
-
+        LeftDriveFront.setDirection(DcMotor.Direction.FORWARD);
+        RightDriveFront.setDirection(DcMotor.Direction.REVERSE);
+        LeftDriveBack.setDirection(DcMotor.Direction.FORWARD);
+        RightDriveBack.setDirection(DcMotor.Direction.FORWARD);
+        pulley.setDirection(DcMotor.Direction.FORWARD);
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
@@ -134,20 +138,22 @@ public class AutonomousBlueside extends LinearOpMode {
 
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        sleep(0000);                                                 //S0:Wait 5 seconds to start
+        rightServo.setPosition(.2);
+        leftServo.setPosition(.8);
+        sleep(1000);                                                 //S0:Wait 5 seconds to start
         leftServo.setPosition(.5);                                       // S1:Grab cube
         rightServo.setPosition(.5);
         sleep(1000);                                                // pause for servos to move
-        encoderDrive(DRIVE_SPEED,  36,36,   3.0); // S2: Drive to Glyph Box
-        encoderDrive(TURN_SPEED,   -11.780972 , 11.708972, 2);     // S3: Turn towards glyph Box
-        encoderDrive(DRIVE_SPEED, 18, 18, 2);     // S4: drive into glyph box
+        encoderDrive(DRIVE_SPEED,  40,40,   2); // S2: Drive to Glyph Box
+       // encoderDrive(TURN_SPEED,   12 , 12, 2);     // S3: Turn towards glyph Box
+        /* encoderDrive(DRIVE_SPEED, -18, 18, 2);     // S4: drive into glyph box
         leftServo.setPosition(0.5);                                      // S5: Release Cube
         rightServo.setPosition(0.5);
         sleep(1000);                                               // pause for servos to move
-        encoderDrive(DRIVE_SPEED, -18, -18, 2);  //S6:Backout of Glyph Box
-        encoderDrive(TURN_SPEED, -14.137166941 , 14.137166941 , 2  );  //S7 Turn around 180
-        encoderDrive(DRIVE_SPEED, -12,-12,2);    //S8:Backup and park
-        sleep(1000);                                               // pause for servos to move
+        encoderDrive(DRIVE_SPEED, 18, -18, 2);  //S6:Backout of Glyph Box
+        encoderDrive(TURN_SPEED, 14.137166941 , 14.137166941 , 2  );  //S7 Turn around 180
+        encoderDrive(DRIVE_SPEED, 12,-12,2);    //S8:Backup and park
+        */sleep(1000);                                               // pause for servos to move
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
@@ -162,7 +168,8 @@ public class AutonomousBlueside extends LinearOpMode {
      *  3) Driver stops the opmode running.
      */
     public void encoderDrive(double speed,
-                             double leftInches, double rightInches,
+                             double leftInches,
+                             double rightInches,
                              double timeoutS) {
 
         int newLeftTarget;

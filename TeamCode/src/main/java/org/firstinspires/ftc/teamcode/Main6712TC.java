@@ -65,7 +65,7 @@ public class Main6712TC extends LinearOpMode {
     private DcMotor Pulley      = null;
     private Servo   rightServo  = null;
     private Servo   leftServo   = null;
-
+    int servovalue = 1;
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
@@ -106,28 +106,28 @@ public class Main6712TC extends LinearOpMode {
 
             // POV Mode uses left stick to go forward, and right stick to turn.
             // - This uses basic math to combine motions and is easier to drive straight.
-            double drive = -gamepad1.left_stick_y;
-            double turn  = -gamepad1.right_stick_x;
+            double drive = gamepad1.left_stick_y;
+            double turn  = -gamepad1.left_stick_x;//no negative
+            double lift = gamepad1.right_stick_y;
             leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
             rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
-            //When a is pressed it goes up
-            //When b is pressed it goes down
-            if (gamepad1.b) pulleyPower = 1.0;
-            else if (gamepad1.a) pulleyPower = -1.0;
-            else
-            if(gamepad1.left_bumper) {
-                // move to 0 degrees.
-                rightServo.setPosition(0);
-                leftServo.setPosition(1);
-            } else if (gamepad1.y) {
-                // move to 90 degrees.
-                rightServo.setPosition(0.5);
-                leftServo.setPosition(0.5);
-            } else if (gamepad1.right_bumper) {
-                // move to 180 degrees.
-                rightServo.setPosition(1);
-                leftServo.setPosition(0);
+            pulleyPower  = Range.clip(lift,-1,1);
+
+            if(gamepad1.right_bumper){
+                servovalue *= (-1);
+                while(gamepad1.right_bumper) {
+                    servovalue = servovalue;
+                }
             }
+            // else if (gamepad1.b){
+            // servovalue= (-1);
+            //}
+            if(servovalue == -1){
+                rightServo.setPosition(.2);
+                leftServo.setPosition(.8);}
+            else if (servovalue == 1){
+                rightServo.setPosition(.5);
+                leftServo.setPosition(.5);}
 
 
 

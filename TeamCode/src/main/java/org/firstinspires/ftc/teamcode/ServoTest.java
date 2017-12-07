@@ -4,6 +4,10 @@ package org.firstinspires.ftc.teamcode;
  * Created by brybr on 11/4/2017.
  */
 
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -17,6 +21,7 @@ public class ServoTest extends Main6712TC{
     private ElapsedTime runtime = new ElapsedTime();
     private Servo rightServo = null;
     private Servo leftServo = null;
+    int servovalue = 1;
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
@@ -28,18 +33,22 @@ public class ServoTest extends Main6712TC{
         while (opModeIsActive()){
             // run until the end of the match (driver presses STOP)
                 // check to see if we need to move the servo.
-                if(gamepad1.right_bumper) {
-                    // move to 0 degrees.
-                    rightServo.setPosition(0);
-                    leftServo.setPosition(1);
-                } else if (gamepad1.left_bumper) {
-                    // move to 90 degrees.
-                    rightServo.setPosition(0.5);
-                    leftServo.setPosition(0.5);
-                } else if (gamepad1.y) {
-                    // move to 180 degrees.
-                    rightServo.setPosition(1);
-                    leftServo.setPosition(0);
+           if(gamepad1.a){
+               servovalue *= (-1);
+               while(gamepad1.a) {
+                   servovalue = servovalue;
+               }
+           }
+           // else if (gamepad1.b){
+              // servovalue= (-1);
+           //}
+           if(servovalue == -1){
+            rightServo.setPosition(.2);
+            leftServo.setPosition(.8);}
+            else if (servovalue == 1){
+            rightServo.setPosition(.5);
+            leftServo.setPosition(.5);}
+
                 }
                 telemetry.addData("Right Servo Position", rightServo.getPosition());
                 telemetry.addData("Left Servo Position", leftServo.getPosition());
@@ -48,4 +57,3 @@ public class ServoTest extends Main6712TC{
 
             }
         }
-    }
