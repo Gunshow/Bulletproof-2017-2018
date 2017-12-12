@@ -80,13 +80,17 @@ public class AutonomousBlueside extends LinearOpMode {
     Main6712TC          robot   = new Main6712TC();   // Use a Main6712TC's hardware
     private ElapsedTime runtime = new ElapsedTime();
 
-    static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: TETRIX Motor Encoder
+    static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: AndyMark Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = .5 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 3.75 ;     // For figuring circumference
+    static final double     Lift_DIAMETER_INCHES    = .75 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
                                                         (WHEEL_DIAMETER_INCHES * 3.1415);
+    static final double     COUNTS_PER_INCH_Lift    = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
+                                                        (Lift_DIAMETER_INCHES * 3.1415) ;
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
+    static final double     Spin_SPEED              = 1;
 
     @Override
     public void runOpMode() {
@@ -138,13 +142,14 @@ public class AutonomousBlueside extends LinearOpMode {
 
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        rightServo.setPosition(.2);
-        leftServo.setPosition(.8);
+        rightServo.setPosition(1);
+        leftServo.setPosition(1);
         sleep(1000);                                                 //S0:Wait 5 seconds to start
         leftServo.setPosition(.5);                                       // S1:Grab cube
         rightServo.setPosition(.5);
         sleep(1000);                                                // pause for servos to move
         encoderDrive(DRIVE_SPEED,  40,40,   2); // S2: Drive to Glyph Box
+        encoderLift(Spin_SPEED,10, 3);
        // encoderDrive(TURN_SPEED,   12 , 12, 2);     // S3: Turn towards glyph Box
         /* encoderDrive(DRIVE_SPEED, -18, 18, 2);     // S4: drive into glyph box
         leftServo.setPosition(0.5);                                      // S5: Release Cube
@@ -158,6 +163,57 @@ public class AutonomousBlueside extends LinearOpMode {
         telemetry.addData("Path", "Complete");
         telemetry.update();
     }
+
+  private void encoderLift
+            (double speed,
+             double rotateInches,
+             double timeoutS) {
+
+            int newPulleyTarget;
+
+            // Ensure that the opmode is still active
+            if (opModeIsActive()) {
+
+                // Determine new target position, and pass to motor controller
+
+
+                newPulleyTarget = pulley.getCurrentPosition() +(int)(rotateInches*COUNTS_PER_INCH_Lift);
+                pulley.setTargetPosition(newPulleyTarget);
+
+                // Turn On RUN_TO_POSITION
+                pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                // reset the timeout time and start motion.
+                runtime.reset();
+                pulley.setPower(Math.abs(speed));
+
+                // keep looping while we are still active, and there is time left, and both motors are running.
+                // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
+                // its target position, the motion will stop.  This is "safer" in the event that the robot will
+                // always end the motion as soon as possible.
+                // However, if you require that BOTH motors have finished their moves before the robot continues
+                // onto the next step, use (isBusy() || isBusy()) in the loop test.
+                while (opModeIsActive() &&
+                        (runtime.seconds() < timeoutS) &&
+                        (pulley.isBusy())) {
+
+                    // Display it for the driver.
+                    telemetry.addData("Path1",  "Running to %7d :%7d",newPulleyTarget);
+                    telemetry.addData("Path2",  "Running at %7d :%7d",
+                            pulley.getCurrentPosition());
+                    telemetry.update();
+                }
+
+                // Stop all motion;
+                pulley.setPower(0);
+
+                // Turn off RUN_TO_POSITION
+                pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+                //  sleep(250);   // optional pause after each move
+            }
+        }
+
 
     /*
      *  Method to perfmorm a relative move, based on encoder counts.
@@ -238,6 +294,7 @@ public class AutonomousBlueside extends LinearOpMode {
             RightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             //  sleep(250);   // optional pause after each move
+
         }
     }
 }

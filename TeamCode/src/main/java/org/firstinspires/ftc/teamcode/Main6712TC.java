@@ -58,14 +58,16 @@ public class Main6712TC extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor LeftDriveFront   = null;
-    private DcMotor RightDriveFront  = null;
-    private DcMotor LeftDriveBack  = null;
+    private DcMotor LeftDriveFront = null;
+    private DcMotor RightDriveFront = null;
+    private DcMotor LeftDriveBack = null;
     private DcMotor RightDriveBack = null;
-    private DcMotor Pulley      = null;
-    private Servo   rightServo  = null;
-    private Servo   leftServo   = null;
-    int servovalue = 1;
+    private DcMotor Pulley = null;
+    private Servo rightServo = null;
+    private Servo leftServo = null;
+    int servovalueright = 1;
+    int servovalueleft = 1;
+
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
@@ -75,13 +77,13 @@ public class Main6712TC extends LinearOpMode {
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
         // Motors labeled if your looking at the FRONT of the robot
-        LeftDriveFront   = hardwareMap.get(DcMotor.class, "left_drive");
-        RightDriveFront  = hardwareMap.get(DcMotor.class, "right_drive");
-        LeftDriveBack  = hardwareMap.get(DcMotor.class, "left_drive2");
+        LeftDriveFront = hardwareMap.get(DcMotor.class, "left_drive");
+        RightDriveFront = hardwareMap.get(DcMotor.class, "right_drive");
+        LeftDriveBack = hardwareMap.get(DcMotor.class, "left_drive2");
         RightDriveBack = hardwareMap.get(DcMotor.class, "right_drive2");
-        Pulley      = hardwareMap.get(DcMotor.class, "pulley");
-        rightServo  = hardwareMap.get(Servo.class, "right_servo");
-        leftServo   = hardwareMap.get(Servo.class, "left_servo");
+        Pulley = hardwareMap.get(DcMotor.class, "pulley");
+        rightServo = hardwareMap.get(Servo.class, "right_servo");
+        leftServo = hardwareMap.get(Servo.class, "left_servo");
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         LeftDriveFront.setDirection(DcMotor.Direction.REVERSE);
@@ -89,7 +91,7 @@ public class Main6712TC extends LinearOpMode {
         LeftDriveBack.setDirection(DcMotor.Direction.REVERSE);
         RightDriveBack.setDirection(DcMotor.Direction.REVERSE);
         Pulley.setDirection(DcMotor.Direction.REVERSE);
-        
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -107,42 +109,58 @@ public class Main6712TC extends LinearOpMode {
             // POV Mode uses left stick to go forward, and right stick to turn.
             // - This uses basic math to combine motions and is easier to drive straight.
             double drive = gamepad1.left_stick_y;
-            double turn  = -gamepad1.left_stick_x;//no negative
+            double turn = -gamepad1.left_stick_x;//no negative
             double lift = gamepad1.right_stick_y;
-            leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-            rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
-            pulleyPower  = Range.clip(lift,-1,1);
+            leftPower = Range.clip(drive + turn, -1.0, 1.0);
+            rightPower = Range.clip(drive - turn, -1.0, 1.0);
+            pulleyPower = Range.clip(lift, -1, 1);
 
-            if(gamepad1.right_bumper){
-                servovalue *= (-1);
-                while(gamepad1.right_bumper) {
-                    servovalue = servovalue;
+            if (gamepad1.right_bumper) {
+                servovalueright *= (-1);
+                while (gamepad1.right_bumper) {
+                    servovalueright = servovalueright;
                 }
             }
-            // else if (gamepad1.b){
-            // servovalue= (-1);
-            //}
-            if(servovalue == -1){
-                rightServo.setPosition(.2);
-                leftServo.setPosition(.8);}
-            else if (servovalue == 1){
-                rightServo.setPosition(.5);
-                leftServo.setPosition(.5);}
+            if (gamepad1.left_bumper) {
+                servovalueleft *= (-1);
+                while (gamepad1.left_bumper) {
+                    servovalueleft = servovalueleft;
+                        }
+                    }
+            if(gamepad1.right_stick_button){
+                servovalueright *= (-1);
+                servovalueleft *= (-1);
+                        while (gamepad1.right_stick_button){
+                            servovalueleft = servovalueleft;
+                            servovalueright = servovalueright;
+                        }
+                    }
+
+                    if (servovalueright == -1) {
+                        rightServo.setPosition(.5);
+                    } else if (servovalueright == 1) {
+                        rightServo.setPosition(1);
+                    }
+                    if (servovalueleft == -1) {
+                        leftServo.setPosition(.5);
+                    } else if (servovalueleft == 1) {
+                        leftServo.setPosition(1);
+                    }
 
 
+                    // Send calculated power to wheels
+                    LeftDriveFront.setPower(leftPower);
+                    RightDriveFront.setPower(rightPower);
+                    LeftDriveBack.setPower(leftPower);
+                    RightDriveBack.setPower(rightPower);
+                    Pulley.setPower(pulleyPower);
+                    // Show the elapsed game time and wheel power.
+                    telemetry.addData("Status", "Run Time: " + runtime.toString());
+                    telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+                    telemetry.addData("Right Servo Position", rightServo.getPosition());
+                    telemetry.addData("Left Servo Position", leftServo.getPosition());
+                    telemetry.update();
+                }
 
-            // Send calculated power to wheels
-            LeftDriveFront.setPower(leftPower);
-            RightDriveFront.setPower(rightPower);
-            LeftDriveBack.setPower(leftPower);
-            RightDriveBack.setPower(rightPower);
-            Pulley.setPower(pulleyPower);
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-            telemetry.addData("Right Servo Position", rightServo.getPosition());
-            telemetry.addData("Left Servo Position", leftServo.getPosition());
-            telemetry.update();
         }
     }
-}
