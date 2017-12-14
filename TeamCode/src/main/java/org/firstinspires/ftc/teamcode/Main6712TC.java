@@ -44,7 +44,7 @@ import com.qualcomm.robotcore.util.Range;
  * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
  * of the FTC Driver Station. When an selection is made from the menu, the corresponding OpMode
  * class is instantiated on the Robot Controller and executed.
- *
+ *d
  * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
  * It includes all the skeletal structure that all linear OpModes contain.
  *
@@ -52,7 +52,7 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Main6712TC ", group="Linear Opmode")
+@TeleOp(name="Main6712", group="Linear Opmode")
 //@Disabled
 public class Main6712TC extends LinearOpMode {
 
@@ -89,7 +89,7 @@ public class Main6712TC extends LinearOpMode {
         LeftDriveFront.setDirection(DcMotor.Direction.REVERSE);
         RightDriveFront.setDirection(DcMotor.Direction.FORWARD);
         LeftDriveBack.setDirection(DcMotor.Direction.REVERSE);
-        RightDriveBack.setDirection(DcMotor.Direction.REVERSE);
+        RightDriveBack.setDirection(DcMotor.Direction.FORWARD);
         Pulley.setDirection(DcMotor.Direction.REVERSE);
 
         // Wait for the game to start (driver presses PLAY)
@@ -139,12 +139,12 @@ public class Main6712TC extends LinearOpMode {
                     if (servovalueright == -1) {
                         rightServo.setPosition(.5);
                     } else if (servovalueright == 1) {
-                        rightServo.setPosition(1);
+                        rightServo.setPosition(Servo.MAX_POSITION);
                     }
                     if (servovalueleft == -1) {
-                        leftServo.setPosition(.5);
+                        leftServo.setPosition(5);
                     } else if (servovalueleft == 1) {
-                        leftServo.setPosition(1);
+                        leftServo.setPosition(Servo.MAX_POSITION);
                     }
 
 

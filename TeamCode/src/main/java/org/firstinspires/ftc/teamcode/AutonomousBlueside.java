@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -111,7 +112,7 @@ public class AutonomousBlueside extends LinearOpMode {
         LeftDriveFront.setDirection(DcMotor.Direction.FORWARD);
         RightDriveFront.setDirection(DcMotor.Direction.REVERSE);
         LeftDriveBack.setDirection(DcMotor.Direction.FORWARD);
-        RightDriveBack.setDirection(DcMotor.Direction.FORWARD);
+        RightDriveBack.setDirection(DcMotor.Direction.REVERSE);
         pulley.setDirection(DcMotor.Direction.FORWARD);
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Resetting Encoders");    //
@@ -149,8 +150,8 @@ public class AutonomousBlueside extends LinearOpMode {
         rightServo.setPosition(.5);
         sleep(1000);                                                // pause for servos to move
         encoderDrive(DRIVE_SPEED,  40,40,   2); // S2: Drive to Glyph Box
-        encoderLift(Spin_SPEED,10, 3);
-       // encoderDrive(TURN_SPEED,   12 , 12, 2);     // S3: Turn towards glyph Box
+        encoderLift(Spin_SPEED,6, 3);
+        encoderDrive(TURN_SPEED,   12 , 12, 2);     // S3: Turn towards glyph Box
         /* encoderDrive(DRIVE_SPEED, -18, 18, 2);     // S4: drive into glyph box
         leftServo.setPosition(0.5);                                      // S5: Release Cube
         rightServo.setPosition(0.5);
@@ -200,7 +201,11 @@ public class AutonomousBlueside extends LinearOpMode {
                     // Display it for the driver.
                     telemetry.addData("Path1",  "Running to %7d :%7d",newPulleyTarget);
                     telemetry.addData("Path2",  "Running at %7d :%7d",
-                            pulley.getCurrentPosition());
+                            pulley.getCurrentPosition(),
+                            LeftDriveFront.getCurrentPosition(),
+                            RightDriveFront.getCurrentPosition(),
+                            LeftDriveBack.getCurrentPosition(),
+                            RightDriveBack.getCurrentPosition());
                     telemetry.update();
                 }
 
@@ -274,7 +279,8 @@ public class AutonomousBlueside extends LinearOpMode {
                 telemetry.addData("Path1",  "Running to %7d :%7d", newLeftTarget,  newRightTarget,
                                                                                     newLeftTarget2,  newRightTarget2);
                 telemetry.addData("Path2",  "Running at %7d :%7d",
-                        LeftDriveFront.getCurrentPosition(),
+                        pulley.getCurrentPosition(),
+                LeftDriveFront.getCurrentPosition(),
                         RightDriveFront.getCurrentPosition(),
                         LeftDriveBack.getCurrentPosition(),
                         RightDriveBack.getCurrentPosition());
