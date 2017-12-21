@@ -38,6 +38,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 /*
  *
  * This is an example LinearOpMode that shows how to use
@@ -115,6 +117,13 @@ public class SensorHTColor extends LinearOpMode {
       telemetry.addData("Green", colorSensor.green());
       telemetry.addData("Blue ", colorSensor.blue());
       telemetry.addData("Hue", hsvValues[0]);
+       if(colorSensor.blue()>colorSensor.red()) {
+           telemetry.addData("Color","Blue");
+       }
+        else if(colorSensor.red()>colorSensor.blue()){
+          telemetry.addData("Color","Red");
+        }
+
 
       // change the background color to match the color detected by the RGB sensor.
       // pass a reference to the hue, saturation, and value array as an argument

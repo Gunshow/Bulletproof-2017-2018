@@ -29,17 +29,12 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import android.graphics.Color;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-
 
 
 /**
@@ -55,9 +50,9 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Main6712", group="Linear Opmode")
+@TeleOp(name="Main6712Old", group="Linear Opmode")
 //@Disabled
-public class Main6712TC extends LinearOpMode {
+public class Main6712TOld extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -68,11 +63,8 @@ public class Main6712TC extends LinearOpMode {
     private DcMotor Pulley = null;
     private Servo rightServo = null;
     private Servo leftServo = null;
-    private Servo ColorSensor =null;
     int servovalueright = 1;
     int servovalueleft = 1;
-    private ColorSensor colorSensor;  // Hardware Device Object
-
 
     @Override
     public void runOpMode() {
@@ -90,16 +82,6 @@ public class Main6712TC extends LinearOpMode {
         Pulley = hardwareMap.get(DcMotor.class, "pulley");
         rightServo = hardwareMap.get(Servo.class, "right_servo");
         leftServo = hardwareMap.get(Servo.class, "left_servo");
-        ColorSensor = hardwareMap.get(Servo.class, "cs_servo");
-        colorSensor = hardwareMap.colorSensor.get("sensor_color");
-        // hsvValues is an array that will hold the hue, saturation, and value information.
-        float hsvValues[] = {0F,0F,0F};
-
-        // values is a reference to the hsvValues array.
-        final float values[] = hsvValues;
-        boolean bLedOn = true;
-
-
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         LeftDriveFront.setDirection(DcMotor.Direction.REVERSE);
@@ -108,11 +90,6 @@ public class Main6712TC extends LinearOpMode {
         RightDriveBack.setDirection(DcMotor.Direction.FORWARD);
         Pulley.setDirection(DcMotor.Direction.REVERSE);
 
-        telemetry.addData("Status", "Resetting Encoders");    //
-        telemetry.update();
-        Pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        Pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -135,12 +112,6 @@ public class Main6712TC extends LinearOpMode {
             leftPower = Range.clip(drive + turn, -1.0, 1.0);
             rightPower = Range.clip(drive - turn, -1.0, 1.0);
             pulleyPower = Range.clip(lift, -1, 1);
-            if(gamepad2.right_bumper) {
-                ColorSensor.setPosition(0);
-            }
-            else if(gamepad2.left_bumper){
-            ColorSensor.setPosition(.67);
-            }
 
             if (gamepad1.right_bumper) {
                 servovalueright *= (-1);
@@ -162,23 +133,17 @@ public class Main6712TC extends LinearOpMode {
                             servovalueright = servovalueright;
                         }
                     }
-                    if(gamepad1.dpad_up){Pulley.setTargetPosition((int) 2852.28);
-                    }
-                    else if(gamepad1.dpad_down){Pulley.setTargetPosition((int) -2852.28);
-                    }
-//475.38200339559=1 inch
+
                     if (servovalueright == -1) {
                         rightServo.setPosition(.5);
                     } else if (servovalueright == 1) {
                         rightServo.setPosition(Servo.MAX_POSITION);
                     }
                     if (servovalueleft == -1) {
-                        leftServo.setPosition(.5);
+                        leftServo.setPosition(5);
                     } else if (servovalueleft == 1) {
                         leftServo.setPosition(Servo.MAX_POSITION);
                     }
-
-
 
 
                     // Send calculated power to wheels
@@ -187,19 +152,11 @@ public class Main6712TC extends LinearOpMode {
                     LeftDriveBack.setPower(leftPower);
                     RightDriveBack.setPower(rightPower);
                     Pulley.setPower(pulleyPower);
-
-            // Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     // Show the elapsed game time and wheel power.
                     telemetry.addData("Status", "Run Time: " + runtime.toString());
                     telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
                     telemetry.addData("Right Servo Position", rightServo.getPosition());
                     telemetry.addData("Left Servo Position", leftServo.getPosition());
-                    telemetry.addData("Cs Servo Position", ColorSensor.getPosition());
-            telemetry.addData("LED", bLedOn ? "On" : "Off");
-            telemetry.addData("Clear", colorSensor.alpha());
-            telemetry.addData("Red  ", colorSensor.red());
-            telemetry.addData("Green", colorSensor.green());
-            telemetry.addData("Blue ", colorSensor.blue());
                     telemetry.update();
                 }
 

@@ -74,8 +74,10 @@ public class AutonomousBlueside extends LinearOpMode {
     private DcMotor LeftDriveBack = null;
     private DcMotor RightDriveBack = null;
     private DcMotor pulley      = null;
-    private Servo rightServo  = null;
+    private Servo rightServo    = null;
     private Servo   leftServo   = null;
+    private Servo ColorSensor =null;
+
 
     /* Declare OpMode members. */
     Main6712TC          robot   = new Main6712TC();   // Use a Main6712TC's hardware
@@ -92,7 +94,6 @@ public class AutonomousBlueside extends LinearOpMode {
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
     static final double     Spin_SPEED              = 1;
-
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
@@ -104,6 +105,8 @@ public class AutonomousBlueside extends LinearOpMode {
         pulley      = hardwareMap.get(DcMotor.class, "pulley");
         rightServo  = hardwareMap.get(Servo.class, "right_servo");
         leftServo   = hardwareMap.get(Servo.class, "left_servo");
+        ColorSensor = hardwareMap.get(Servo.class, "cs_servo");
+
         /*
          * Initialize the drive system variables.
          * The init() method of the hardware class does all the work here
@@ -134,6 +137,8 @@ public class AutonomousBlueside extends LinearOpMode {
                 RightDriveFront.getCurrentPosition(),
                 LeftDriveBack.getCurrentPosition(),
                 RightDriveBack.getCurrentPosition());
+        rightServo.setPosition(1);
+        leftServo.setPosition(1);
 
 
         telemetry.update();
@@ -149,23 +154,23 @@ public class AutonomousBlueside extends LinearOpMode {
         leftServo.setPosition(.5);                                       // S1:Grab cube
         rightServo.setPosition(.5);
         sleep(1000);                                                // pause for servos to move
-        encoderDrive(DRIVE_SPEED,  40,40,   2); // S2: Drive to Glyph Box
-        encoderLift(Spin_SPEED,6, 3);
-        encoderDrive(TURN_SPEED,   12 , 12, 2);     // S3: Turn towards glyph Box
-        /* encoderDrive(DRIVE_SPEED, -18, 18, 2);     // S4: drive into glyph box
-        leftServo.setPosition(0.5);                                      // S5: Release Cube
-        rightServo.setPosition(0.5);
+        encoderDrive(DRIVE_SPEED,  41,41,   2); // S2: Drive to Glyph Box
+        //encoderLift(Spin_SPEED,6, 3);
+        encoderDrive(TURN_SPEED,   -17.48 , 17.48, 2);     // S3: Turn towards glyph Box
+         encoderDrive(DRIVE_SPEED, 18, 18, 2);     // S4: drive into glyph box
+        leftServo.setPosition(1);                                      // S5: Release Cube
+        rightServo.setPosition(1);
         sleep(1000);                                               // pause for servos to move
-        encoderDrive(DRIVE_SPEED, 18, -18, 2);  //S6:Backout of Glyph Box
-        encoderDrive(TURN_SPEED, 14.137166941 , 14.137166941 , 2  );  //S7 Turn around 180
-        encoderDrive(DRIVE_SPEED, 12,-12,2);    //S8:Backup and park
-        */sleep(1000);                                               // pause for servos to move
-
+        encoderDrive(DRIVE_SPEED, -18, -18, 2);  //S6:Backout of Glyph Box
+        encoderDrive(TURN_SPEED, 35.16 , -35.16 , 2  );  //S7 Turn around 180
+       encoderDrive(DRIVE_SPEED, 12,-12,2);    //S8:Backup and park
+       sleep(1000);                                               // pause for servos to move
+//5.416 degrees turn = 1 inch
         telemetry.addData("Path", "Complete");
         telemetry.update();
     }
 
-  private void encoderLift
+  /*private void encoderLift
             (double speed,
              double rotateInches,
              double timeoutS) {

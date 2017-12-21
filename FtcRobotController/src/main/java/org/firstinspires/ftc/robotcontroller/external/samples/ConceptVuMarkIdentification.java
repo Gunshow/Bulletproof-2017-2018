@@ -31,6 +31,7 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.vuforia.CameraDevice;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
@@ -66,7 +67,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
  */
 
 @Autonomous(name="Concept: VuMark Id", group ="Concept")
-@Disabled
+//@Disabled
 public class ConceptVuMarkIdentification extends LinearOpMode {
 
     public static final String TAG = "Vuforia VuMark Sample";
@@ -103,14 +104,14 @@ public class ConceptVuMarkIdentification extends LinearOpMode {
          * Once you've obtained a license key, copy the string from the Vuforia web site
          * and paste it in to your code onthe next line, between the double quotes.
          */
-        parameters.vuforiaLicenseKey = "ATsODcD/////AAAAAVw2lR...d45oGpdljdOh5LuFB9nDNfckoxb8COxKSFX";
+        parameters.vuforiaLicenseKey = "AQHpBJD/////AAAAGZVP9yMZskCVuGhdevkuv5Fj9ijFPt0+ZBjva+5acSsF7qURU3zIDv7VM1RI1iNmDa2PsGjl8xvFcqUWMHDz/oVmDY9HirmEqalP8zk4mK1PO6KQ0EKjo7n+dYatfwnheThOUKbWYYRkYLZa+QWDvyFbLip9P+VwLHy2FKj66zY2wwmIk6Y44gyAl3SCseIyfMqYLP508iFhi5V7CZCH20GB2jtcdQEgJxl7dNjHQDidQTidgVvRpxR64eovG8ASKJClQMhZivfrBE3PzbjLj5K7nF1NVwx/GEedHsY24cKxhjL3ci0O3MKZ5ih4EgZARBGTUnLKwJWyBI4mcSqrukvPzbPimoz+3S9v6nFdblJR";
 
         /*
          * We also indicate which camera on the RC that we wish to use.
          * Here we chose the back (HiRes) camera (for greater range), but
          * for a competition robot, the front camera might be more convenient.
          */
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.FRONT;
         this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
 
         /**
@@ -130,7 +131,7 @@ public class ConceptVuMarkIdentification extends LinearOpMode {
         relicTrackables.activate();
 
         while (opModeIsActive()) {
-
+            CameraDevice.getInstance().setFlashTorchMode(true) ;
             /**
              * See if any of the instances of {@link relicTemplate} are currently visible.
              * {@link RelicRecoveryVuMark} is an enum which can have the following values:
