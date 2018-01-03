@@ -30,15 +30,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 
 /**
  * This file illustrates the concept of driving a path based on encoder counts.
@@ -67,16 +61,15 @@ import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="AutiRedSide", group="Pushbot")
+@Autonomous(name="AutiSandBox", group="Pushbot")
 //@Disabled
-public class AutonomousRedside extends LinearOpMode {
+public class AutonomousSandbox extends LinearOpMode {
 
 
 
     /* Declare OpMode members. */
     HardwareMain6712 Robot = new HardwareMain6712();
     private ElapsedTime runtime = new ElapsedTime();
-
     static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: AndyMark Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = .5 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 3.75 ;     // For figuring circumference
@@ -85,18 +78,19 @@ public class AutonomousRedside extends LinearOpMode {
             (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     COUNTS_PER_INCH_Lift    = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (Lift_DIAMETER_INCHES * 3.1415) ;
-    static final double     DRIVE_SPEED             = 0.6;
-    static final double     TURN_SPEED              = 0.5;
+    static final double     DRIVE_SPEED             = .4;
+    static final double     TURN_SPEED              = .2;
+
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-
+      
         /*
          * Initialize the drive system variables.
          * The init() method of the hardware class does all the work here
          */
-
+        
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
@@ -120,31 +114,23 @@ public class AutonomousRedside extends LinearOpMode {
         Robot.TopServo.setPosition(1);
         Robot.BottomServo.setPosition(1);
 
-
+        final float values[] = Robot.hsvValues;
+        boolean bLedOn = true;
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
+        Robot.ColorSensorArm.setPosition(.667);
+        sleep(500);
+        if (Robot.ColorSensor.red() < Robot.ColorSensor.blue()) {
+            telemetry.addData("Color", "red");
+        encoderDrive(TURN_SPEED,2,-2,0,2);
+        }
+        else if (Robot.ColorSensor.blue() < Robot.ColorSensor.red()) {
+            telemetry.addData("Color", "blue");
+            encoderDrive(TURN_SPEED,-2,2,0,2);
+        }
 
-        // Step through each leg of the path,
-        // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        Robot.TopServo.setPosition(1);
-        Robot.BottomServo.setPosition(1);
-        sleep(1000);                                                 //S0:Wait 5 seconds to start
-        Robot.BottomServo.setPosition(.5);                                       // S1:Grab cube
-        Robot.TopServo.setPosition(.5);
-        sleep(1000);                                                // pause for servos to move
-        encoderDrive(DRIVE_SPEED,  41,41,0,   2); // S2: Drive to Glyph Box
-        encoderDrive(TURN_SPEED,   -17.48 , 17.48,0, 2);     // S3: Turn towards glyph Box
-        encoderDrive(DRIVE_SPEED, 18, 18, 0,2);     // S4: drive into glyph box
-        Robot.BottomServo.setPosition(1);                                      // S5: Release Cube
-        Robot.TopServo.setPosition(1);
-        sleep(1000);                                               // pause for servos to move
-        encoderDrive(DRIVE_SPEED, -18, -18,0, 2);  //S6:Backout of Glyph Box
-        encoderDrive(TURN_SPEED, 35.16 , -35.16 , 0,2  );  //S7 Turn around 180
-        encoderDrive(DRIVE_SPEED, 12,-12,0,2);    //S8:Backup and park
-        sleep(1000);                                               // pause for servos to move
-//5.416 degrees turn = 1 inch
         telemetry.addData("Path", "Complete");
         telemetry.update();
     }

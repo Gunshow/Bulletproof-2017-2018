@@ -35,6 +35,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
@@ -69,76 +70,55 @@ import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 @Autonomous(name="AutiBlueSide", group="Pushbot")
 //@Disabled
 public class AutonomousBlueside extends LinearOpMode {
-    private DcMotor LeftDriveFront  = null;
-    private DcMotor RightDriveFront = null;
-    private DcMotor LeftDriveBack = null;
-    private DcMotor RightDriveBack = null;
-    private DcMotor pulley      = null;
-    private Servo rightServo    = null;
-    private Servo   leftServo   = null;
-    private Servo ColorSensor =null;
+    
 
 
     /* Declare OpMode members. */
-    Main6712TC          robot   = new Main6712TC();   // Use a Main6712TC's hardware
+    HardwareMain6712 Robot = new HardwareMain6712();
     private ElapsedTime runtime = new ElapsedTime();
-
     static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: AndyMark Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = .5 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 3.75 ;     // For figuring circumference
     static final double     Lift_DIAMETER_INCHES    = .75 ;     // For figuring circumference
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-                                                        (WHEEL_DIAMETER_INCHES * 3.1415);
+            (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     COUNTS_PER_INCH_Lift    = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-                                                        (Lift_DIAMETER_INCHES * 3.1415) ;
+            (Lift_DIAMETER_INCHES * 3.1415) ;
     static final double     DRIVE_SPEED             = 0.6;
     static final double     TURN_SPEED              = 0.5;
-    static final double     Spin_SPEED              = 1;
+
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-        LeftDriveFront  = hardwareMap.get(DcMotor.class, "left_drive");
-        RightDriveFront = hardwareMap.get(DcMotor.class, "right_drive");
-        LeftDriveBack = hardwareMap.get(DcMotor.class, "left_drive2");
-        RightDriveBack = hardwareMap.get(DcMotor.class, "right_drive2");
-        pulley      = hardwareMap.get(DcMotor.class, "pulley");
-        rightServo  = hardwareMap.get(Servo.class, "right_servo");
-        leftServo   = hardwareMap.get(Servo.class, "left_servo");
-        ColorSensor = hardwareMap.get(Servo.class, "cs_servo");
-
+      
         /*
          * Initialize the drive system variables.
          * The init() method of the hardware class does all the work here
          */
-
-        LeftDriveFront.setDirection(DcMotor.Direction.FORWARD);
-        RightDriveFront.setDirection(DcMotor.Direction.REVERSE);
-        LeftDriveBack.setDirection(DcMotor.Direction.FORWARD);
-        RightDriveBack.setDirection(DcMotor.Direction.REVERSE);
-        pulley.setDirection(DcMotor.Direction.FORWARD);
+        
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
 
-        LeftDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        RightDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        LeftDriveBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        RightDriveBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Robot.LeftDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Robot.RightDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Robot.LeftDriveBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Robot.RightDriveBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        LeftDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        LeftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        RightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Robot.LeftDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Robot.RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Robot.LeftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Robot.RightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Path0",  "Starting at %7d :%7d",
-                LeftDriveFront.getCurrentPosition(),
-                RightDriveFront.getCurrentPosition(),
-                LeftDriveBack.getCurrentPosition(),
-                RightDriveBack.getCurrentPosition());
-        rightServo.setPosition(1);
-        leftServo.setPosition(1);
+                Robot.LeftDriveFront.getCurrentPosition(),
+                Robot.RightDriveFront.getCurrentPosition(),
+                Robot.LeftDriveBack.getCurrentPosition(),
+                Robot.RightDriveBack.getCurrentPosition());
+        Robot.TopServo.setPosition(1);
+        Robot.BottomServo.setPosition(1);
 
 
         telemetry.update();
@@ -148,126 +128,68 @@ public class AutonomousBlueside extends LinearOpMode {
 
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
-        rightServo.setPosition(1);
-        leftServo.setPosition(1);
+        Robot.TopServo.setPosition(1);
+        Robot.BottomServo.setPosition(1);
         sleep(1000);                                                 //S0:Wait 5 seconds to start
-        leftServo.setPosition(.5);                                       // S1:Grab cube
-        rightServo.setPosition(.5);
+        Robot.BottomServo.setPosition(.5);                                       // S1:Grab cube
+        Robot.TopServo.setPosition(.5);
         sleep(1000);                                                // pause for servos to move
-        encoderDrive(DRIVE_SPEED,  41,41,   2); // S2: Drive to Glyph Box
-        //encoderLift(Spin_SPEED,6, 3);
-        encoderDrive(TURN_SPEED,   -17.48 , 17.48, 2);     // S3: Turn towards glyph Box
-         encoderDrive(DRIVE_SPEED, 18, 18, 2);     // S4: drive into glyph box
-        leftServo.setPosition(1);                                      // S5: Release Cube
-        rightServo.setPosition(1);
+        encoderDrive(DRIVE_SPEED,  41,41,0,   2); // S2: Drive to Glyph Box
+        encoderDrive(TURN_SPEED,   -17.48 , 17.48,0, 2);     // S3: Turn towards glyph Box
+         encoderDrive(DRIVE_SPEED, 18, 18, 0,2);     // S4: drive into glyph box
+        Robot.BottomServo.setPosition(1);                                      // S5: Release Cube
+        Robot.TopServo.setPosition(1);
         sleep(1000);                                               // pause for servos to move
-        encoderDrive(DRIVE_SPEED, -18, -18, 2);  //S6:Backout of Glyph Box
-        encoderDrive(TURN_SPEED, 35.16 , -35.16 , 2  );  //S7 Turn around 180
-       encoderDrive(DRIVE_SPEED, 12,-12,2);    //S8:Backup and park
+        encoderDrive(DRIVE_SPEED, -18, -18,0, 2);  //S6:Backout of Glyph Box
+        encoderDrive(TURN_SPEED, 35.16 , -35.16 , 0,2  );  //S7 Turn around 180
+       encoderDrive(DRIVE_SPEED, 12,-12,0,2);    //S8:Backup and park
        sleep(1000);                                               // pause for servos to move
 //5.416 degrees turn = 1 inch
         telemetry.addData("Path", "Complete");
         telemetry.update();
     }
 
-  /*private void encoderLift
-            (double speed,
-             double rotateInches,
-             double timeoutS) {
-
-            int newPulleyTarget;
-
-            // Ensure that the opmode is still active
-            if (opModeIsActive()) {
-
-                // Determine new target position, and pass to motor controller
-
-
-                newPulleyTarget = pulley.getCurrentPosition() +(int)(rotateInches*COUNTS_PER_INCH_Lift);
-                pulley.setTargetPosition(newPulleyTarget);
-
-                // Turn On RUN_TO_POSITION
-                pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-                // reset the timeout time and start motion.
-                runtime.reset();
-                pulley.setPower(Math.abs(speed));
-
-                // keep looping while we are still active, and there is time left, and both motors are running.
-                // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
-                // its target position, the motion will stop.  This is "safer" in the event that the robot will
-                // always end the motion as soon as possible.
-                // However, if you require that BOTH motors have finished their moves before the robot continues
-                // onto the next step, use (isBusy() || isBusy()) in the loop test.
-                while (opModeIsActive() &&
-                        (runtime.seconds() < timeoutS) &&
-                        (pulley.isBusy())) {
-
-                    // Display it for the driver.
-                    telemetry.addData("Path1",  "Running to %7d :%7d",newPulleyTarget);
-                    telemetry.addData("Path2",  "Running at %7d :%7d",
-                            pulley.getCurrentPosition(),
-                            LeftDriveFront.getCurrentPosition(),
-                            RightDriveFront.getCurrentPosition(),
-                            LeftDriveBack.getCurrentPosition(),
-                            RightDriveBack.getCurrentPosition());
-                    telemetry.update();
-                }
-
-                // Stop all motion;
-                pulley.setPower(0);
-
-                // Turn off RUN_TO_POSITION
-                pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-                //  sleep(250);   // optional pause after each move
-            }
-        }
-
-
-    /*
-     *  Method to perfmorm a relative move, based on encoder counts.
-     *  Encoders are not reset as the move is based on the current position.
-     *  Move will stop if any of three conditions occur:
-     *  1) Move gets to the desired position
-     *  2) Move runs out of time
-     *  3) Driver stops the opmode running.
-     */
     public void encoderDrive(double speed,
                              double leftInches,
                              double rightInches,
+                             double liftInches,
                              double timeoutS) {
 
         int newLeftTarget;
         int newRightTarget;
         int newLeftTarget2;
         int newRightTarget2;
+        int newLiftTarget;
         // Ensure that the opmode is still active
         if (opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
 
-            newLeftTarget = LeftDriveFront.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightTarget = RightDriveFront.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            newLeftTarget2 = LeftDriveBack.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightTarget2 = RightDriveBack.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            LeftDriveFront.setTargetPosition(newLeftTarget);
-            RightDriveFront.setTargetPosition(newRightTarget);
-            LeftDriveBack.setTargetPosition(newLeftTarget2);
-            RightDriveBack.setTargetPosition(newRightTarget2);
+            newLeftTarget = Robot.LeftDriveFront.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
+            newRightTarget = Robot.RightDriveFront.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+            newLeftTarget2 = Robot.LeftDriveBack.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
+            newRightTarget2 = Robot.RightDriveBack.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+            newLiftTarget = Robot.Pulley.getCurrentPosition()  + (int)(liftInches * COUNTS_PER_INCH_Lift);
+            Robot.LeftDriveFront.setTargetPosition(newLeftTarget);
+            Robot.RightDriveFront.setTargetPosition(newRightTarget);
+            Robot.LeftDriveBack.setTargetPosition(newLeftTarget2);
+            Robot.RightDriveBack.setTargetPosition(newRightTarget2);
+            Robot.Pulley.setTargetPosition(newLiftTarget);
 
             // Turn On RUN_TO_POSITION
-            LeftDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            RightDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            LeftDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            RightDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            Robot.LeftDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            Robot.RightDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            Robot.LeftDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            Robot.RightDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            Robot.Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             // reset the timeout time and start motion.
             runtime.reset();
-            LeftDriveFront.setPower(Math.abs(speed));
-            RightDriveFront.setPower(Math.abs(speed));
-            LeftDriveBack.setPower(Math.abs(speed));
-            RightDriveBack.setPower(Math.abs(speed));
+            Robot.LeftDriveFront.setPower(Math.abs(speed));
+            Robot.RightDriveFront.setPower(Math.abs(speed));
+            Robot.LeftDriveBack.setPower(Math.abs(speed));
+            Robot.RightDriveBack.setPower(Math.abs(speed));
+            Robot.Pulley.setPower(Math.abs(speed));
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
@@ -277,32 +199,33 @@ public class AutonomousBlueside extends LinearOpMode {
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
             while (opModeIsActive() &&
                     (runtime.seconds() < timeoutS) &&
-                    (LeftDriveFront.isBusy() && RightDriveFront.isBusy()
-                            && LeftDriveBack.isBusy() && RightDriveBack.isBusy())) {
+                    (Robot.LeftDriveFront.isBusy() && Robot.RightDriveFront.isBusy() && Robot.Pulley.isBusy()
+                            && Robot.LeftDriveBack.isBusy() && Robot.RightDriveBack.isBusy())) {
 
                 // Display it for the driver.
-                telemetry.addData("Path1",  "Running to %7d :%7d", newLeftTarget,  newRightTarget,
-                                                                                    newLeftTarget2,  newRightTarget2);
+                telemetry.addData("Path1",  "Running to %7d :%7d", newLeftTarget,  newRightTarget, newLiftTarget,newLeftTarget2,  newRightTarget2);
                 telemetry.addData("Path2",  "Running at %7d :%7d",
-                        pulley.getCurrentPosition(),
-                LeftDriveFront.getCurrentPosition(),
-                        RightDriveFront.getCurrentPosition(),
-                        LeftDriveBack.getCurrentPosition(),
-                        RightDriveBack.getCurrentPosition());
+                        Robot.Pulley.getCurrentPosition(),
+                        Robot.LeftDriveFront.getCurrentPosition(),
+                        Robot.RightDriveFront.getCurrentPosition(),
+                        Robot.LeftDriveBack.getCurrentPosition(),
+                        Robot.RightDriveBack.getCurrentPosition());
                 telemetry.update();
             }
 
             // Stop all motion;
-            LeftDriveFront.setPower(0);
-            RightDriveFront.setPower(0);
-            LeftDriveBack.setPower(0);
-            RightDriveBack.setPower(0);
+            Robot.LeftDriveFront.setPower(0);
+            Robot.RightDriveFront.setPower(0);
+            Robot.LeftDriveBack.setPower(0);
+            Robot.RightDriveBack.setPower(0);
+            Robot.Pulley.setPower(0);
 
             // Turn off RUN_TO_POSITION
-            LeftDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            LeftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            RightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            Robot.LeftDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            Robot.RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            Robot.LeftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            Robot.RightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            Robot.Pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             //  sleep(250);   // optional pause after each move
 
