@@ -38,6 +38,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Hardware;
 import com.qualcomm.robotcore.util.Range;
@@ -61,16 +62,36 @@ import static org.firstinspires.ftc.teamcode.AutonomousBlueside.DRIVE_SPEED;
 @Autonomous(name="Colorsensortest", group="Linear Opmode")
 //@Disabled
 public class Colorsensortest extends LinearOpMode {
+    float hsvValues[] = {0F, 0F, 0F};
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    HardwareMain6712 Robot = new HardwareMain6712();
-
+    public DcMotor LeftDriveFront = null;
+    public DcMotor RightDriveFront = null;
+    public DcMotor LeftDriveBack = null;
+    public DcMotor RightDriveBack = null;
+    public DcMotor Pulley = null;
+    public Servo   TopServo = null;
+    public Servo   BottomServo = null;
+    public Servo   ColorSensorArm =null;
+    public int     servovaluetop = 1;
+    public int     servovaluebottom = 1;
+    public int     LiftCountsPerInch = 475;
+    public ColorSensor ColorSensor = null;  // Hardware Device Object
 
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
+        LeftDriveFront = hardwareMap.get(DcMotor.class, "left_drive");
+        RightDriveFront = hardwareMap.get(DcMotor.class, "right_drive");
+        LeftDriveBack = hardwareMap.get(DcMotor.class, "left_drive2");
+        RightDriveBack =  hardwareMap.get (DcMotor.class, "right_drive2");
+        Pulley =  hardwareMap.get (DcMotor.class, "pulley");
+        TopServo  =  hardwareMap.get (Servo.class, "top_servo");
+        BottomServo =  hardwareMap.get (Servo.class, "bottom_servo");
+        ColorSensorArm =  hardwareMap.get (Servo.class, "cs_servo");
+        ColorSensor =hardwareMap.get(ColorSensor.class,"sensor_color");
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -81,7 +102,9 @@ public class Colorsensortest extends LinearOpMode {
 
         // values is a reference to the hsvValues array.
         final float values[] = hsvValues;
-        boolean bLedOn = true;
+        boolean bLedOn = false;
+        TopServo.setPosition(1);
+        BottomServo.setPosition(1);
 
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -89,26 +112,30 @@ public class Colorsensortest extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            if (Robot.ColorSensor.red() < Robot.ColorSensor.blue()) {
-
-            }
-            if (Robot.ColorSensor.blue() < Robot.ColorSensor.red()) {
+            if (  ColorSensor.red() <   ColorSensor.blue()) {
+                TopServo.setPosition(1);
+                BottomServo.setPosition(.5);
                 telemetry.addData("Color", "blue");
-            }
 
+            }
+            if (  ColorSensor.blue() <   ColorSensor.red()) {
+                TopServo.setPosition(.5);
+                BottomServo.setPosition(1);
+                telemetry.addData("Color", "red");
+            }
 
 
             // Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Right Servo Position", Robot.BottomServo.getPosition());
-            telemetry.addData("Left Servo Position", Robot.TopServo.getPosition());
-            telemetry.addData("Cs Servo Position", Robot.ColorSensorArm.getPosition());
+            telemetry.addData("Right Servo Position",   BottomServo.getPosition());
+            telemetry.addData("Left Servo Position",   TopServo.getPosition());
+            telemetry.addData("Cs Servo Position",   ColorSensorArm.getPosition());
             telemetry.addData("LED", bLedOn ? "On" : "Off");
-            telemetry.addData("Clear", Robot.ColorSensor.alpha());
-            telemetry.addData("Red  ", Robot.ColorSensor.red());
-            telemetry.addData("Green", Robot.ColorSensor.green());
-            telemetry.addData("Blue ", Robot.ColorSensor.blue());
+            telemetry.addData("Clear",   ColorSensor.alpha());
+            telemetry.addData("Red  ",   ColorSensor.red());
+            telemetry.addData("Green",   ColorSensor.green());
+            telemetry.addData("Blue ",   ColorSensor.blue());
             telemetry.update();
         }
 

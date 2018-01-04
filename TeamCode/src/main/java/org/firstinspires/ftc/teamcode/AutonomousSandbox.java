@@ -31,7 +31,9 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -68,8 +70,17 @@ public class AutonomousSandbox extends LinearOpMode {
 
 
     /* Declare OpMode members. */
-    HardwareMain6712 Robot = new HardwareMain6712();
+
     private ElapsedTime runtime = new ElapsedTime();
+    public DcMotor LeftDriveFront = null;
+    public DcMotor RightDriveFront = null;
+    public DcMotor LeftDriveBack = null;
+    public DcMotor RightDriveBack = null;
+    public DcMotor Pulley = null;
+    public Servo TopServo = null;
+    public Servo   BottomServo = null;
+    public Servo   ColorSensorArm =null;
+    public ColorSensor ColorSensor = null;
     static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: AndyMark Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = .5 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 3.75 ;     // For figuring circumference
@@ -85,7 +96,20 @@ public class AutonomousSandbox extends LinearOpMode {
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-      
+        LeftDriveFront = hardwareMap.get(DcMotor.class, "left_drive");
+        RightDriveFront = hardwareMap.get(DcMotor.class, "right_drive");
+        LeftDriveBack = hardwareMap.get(DcMotor.class, "left_drive2");
+        RightDriveBack =  hardwareMap.get (DcMotor.class, "right_drive2");
+        Pulley =  hardwareMap.get (DcMotor.class, "pulley");
+        TopServo  =  hardwareMap.get (Servo.class, "top_servo");
+        BottomServo =  hardwareMap.get (Servo.class, "bottom_servo");
+        ColorSensorArm =  hardwareMap.get (Servo.class, "cs_servo");
+        ColorSensor =hardwareMap.get(ColorSensor.class,"sensor_color");
+        LeftDriveFront.setDirection(DcMotor.Direction.REVERSE);
+        RightDriveFront.setDirection(DcMotor.Direction.FORWARD);
+        LeftDriveBack.setDirection(DcMotor.Direction.REVERSE);
+        RightDriveBack.setDirection(DcMotor.Direction.FORWARD);
+        Pulley.setDirection(DcMotor.Direction.REVERSE);
         /*
          * Initialize the drive system variables.
          * The init() method of the hardware class does all the work here
@@ -95,45 +119,48 @@ public class AutonomousSandbox extends LinearOpMode {
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
 
-        Robot.LeftDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Robot.RightDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Robot.LeftDriveBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Robot.RightDriveBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+         LeftDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+         RightDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+         LeftDriveBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+         RightDriveBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        Robot.LeftDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        Robot.RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        Robot.LeftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        Robot.RightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+         LeftDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+         RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+         LeftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+         RightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Send telemetry message to indicate successful Encoder reset
         telemetry.addData("Path0",  "Starting at %7d :%7d",
-                Robot.LeftDriveFront.getCurrentPosition(),
-                Robot.RightDriveFront.getCurrentPosition(),
-                Robot.LeftDriveBack.getCurrentPosition(),
-                Robot.RightDriveBack.getCurrentPosition());
-        Robot.TopServo.setPosition(1);
-        Robot.BottomServo.setPosition(1);
+                 LeftDriveFront.getCurrentPosition(),
+                 RightDriveFront.getCurrentPosition(),
+                 LeftDriveBack.getCurrentPosition(),
+                 RightDriveBack.getCurrentPosition());
+         TopServo.setPosition(1);
+         BottomServo.setPosition(1);
+        float hsvValues[] = {0F, 0F, 0F};
 
-        final float values[] = Robot.hsvValues;
+        final float values[] =  hsvValues;
         boolean bLedOn = true;
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
-        Robot.ColorSensorArm.setPosition(.667);
-        sleep(500);
-        if (Robot.ColorSensor.red() < Robot.ColorSensor.blue()) {
-            telemetry.addData("Color", "red");
-        encoderDrive(TURN_SPEED,2,-2,0,2);
-        }
-        else if (Robot.ColorSensor.blue() < Robot.ColorSensor.red()) {
+        sleep(2000);
+        encoderDrive(DRIVE_SPEED,6,6,0,2);
+         ColorSensorArm.setPosition(.667);
+        sleep(500);}
+      /*  if ( ColorSensor.red() <  ColorSensor.blue()) {
             telemetry.addData("Color", "blue");
-            encoderDrive(TURN_SPEED,-2,2,0,2);
+        sleep(2000);
         }
-
+        else if ( ColorSensor.blue() <  ColorSensor.red()) {
+            telemetry.addData("Color", "red");
+            sleep(2000);
+        }
+        sleep(2000);
         telemetry.addData("Path", "Complete");
         telemetry.update();
-    }
+    }*/
 
     public void encoderDrive(double speed,
                              double leftInches,
@@ -151,31 +178,31 @@ public class AutonomousSandbox extends LinearOpMode {
 
             // Determine new target position, and pass to motor controller
 
-            newLeftTarget = Robot.LeftDriveFront.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightTarget = Robot.RightDriveFront.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            newLeftTarget2 = Robot.LeftDriveBack.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newRightTarget2 = Robot.RightDriveBack.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            newLiftTarget = Robot.Pulley.getCurrentPosition()  + (int)(liftInches * COUNTS_PER_INCH_Lift);
-            Robot.LeftDriveFront.setTargetPosition(newLeftTarget);
-            Robot.RightDriveFront.setTargetPosition(newRightTarget);
-            Robot.LeftDriveBack.setTargetPosition(newLeftTarget2);
-            Robot.RightDriveBack.setTargetPosition(newRightTarget2);
-            Robot.Pulley.setTargetPosition(newLiftTarget);
+            newLeftTarget =  LeftDriveFront.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
+            newRightTarget =  RightDriveFront.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+            newLeftTarget2 =  LeftDriveBack.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
+            newRightTarget2 =  RightDriveBack.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+            newLiftTarget =  Pulley.getCurrentPosition()  + (int)(liftInches * COUNTS_PER_INCH_Lift);
+             LeftDriveFront.setTargetPosition(newLeftTarget);
+             RightDriveFront.setTargetPosition(newRightTarget);
+             LeftDriveBack.setTargetPosition(newLeftTarget2);
+             RightDriveBack.setTargetPosition(newRightTarget2);
+             Pulley.setTargetPosition(newLiftTarget);
 
             // Turn On RUN_TO_POSITION
-            Robot.LeftDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            Robot.RightDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            Robot.LeftDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            Robot.RightDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            Robot.Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+             LeftDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+             RightDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+             LeftDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+             RightDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+             Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             // reset the timeout time and start motion.
             runtime.reset();
-            Robot.LeftDriveFront.setPower(Math.abs(speed));
-            Robot.RightDriveFront.setPower(Math.abs(speed));
-            Robot.LeftDriveBack.setPower(Math.abs(speed));
-            Robot.RightDriveBack.setPower(Math.abs(speed));
-            Robot.Pulley.setPower(Math.abs(speed));
+             LeftDriveFront.setPower(Math.abs(speed));
+             RightDriveFront.setPower(Math.abs(speed));
+             LeftDriveBack.setPower(Math.abs(speed));
+             RightDriveBack.setPower(Math.abs(speed));
+             Pulley.setPower(Math.abs(speed));
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
@@ -185,33 +212,33 @@ public class AutonomousSandbox extends LinearOpMode {
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
             while (opModeIsActive() &&
                     (runtime.seconds() < timeoutS) &&
-                    (Robot.LeftDriveFront.isBusy() && Robot.RightDriveFront.isBusy() && Robot.Pulley.isBusy()
-                            && Robot.LeftDriveBack.isBusy() && Robot.RightDriveBack.isBusy())) {
+                    ( LeftDriveFront.isBusy() &&  RightDriveFront.isBusy() &&  Pulley.isBusy()
+                            &&  LeftDriveBack.isBusy() &&  RightDriveBack.isBusy())) {
 
                 // Display it for the driver.
                 telemetry.addData("Path1",  "Running to %7d :%7d", newLeftTarget,  newRightTarget, newLiftTarget,newLeftTarget2,  newRightTarget2);
                 telemetry.addData("Path2",  "Running at %7d :%7d",
-                        Robot.Pulley.getCurrentPosition(),
-                        Robot.LeftDriveFront.getCurrentPosition(),
-                        Robot.RightDriveFront.getCurrentPosition(),
-                        Robot.LeftDriveBack.getCurrentPosition(),
-                        Robot.RightDriveBack.getCurrentPosition());
+                         Pulley.getCurrentPosition(),
+                         LeftDriveFront.getCurrentPosition(),
+                         RightDriveFront.getCurrentPosition(),
+                         LeftDriveBack.getCurrentPosition(),
+                         RightDriveBack.getCurrentPosition());
                 telemetry.update();
             }
 
             // Stop all motion;
-            Robot.LeftDriveFront.setPower(0);
-            Robot.RightDriveFront.setPower(0);
-            Robot.LeftDriveBack.setPower(0);
-            Robot.RightDriveBack.setPower(0);
-            Robot.Pulley.setPower(0);
+             LeftDriveFront.setPower(0);
+             RightDriveFront.setPower(0);
+             LeftDriveBack.setPower(0);
+             RightDriveBack.setPower(0);
+             Pulley.setPower(0);
 
             // Turn off RUN_TO_POSITION
-            Robot.LeftDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            Robot.RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            Robot.LeftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            Robot.RightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            Robot.Pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+             LeftDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+             RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+             LeftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+             RightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+             Pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             //  sleep(250);   // optional pause after each move
 

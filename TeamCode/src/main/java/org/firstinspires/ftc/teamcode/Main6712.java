@@ -38,6 +38,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -51,14 +52,38 @@ import java.lang.annotation.Target;
 @TeleOp(name="Main6712", group="Linear Opmode")
 //@Disabled
 public class Main6712 extends LinearOpMode {
-    HardwareMain6712 Robot = new HardwareMain6712();
-    HardwareMap hwMap           =  null;
+    private ElapsedTime runtime = new ElapsedTime();
+    public DcMotor LeftDriveFront = null;
+    public DcMotor RightDriveFront = null;
+    public DcMotor LeftDriveBack = null;
+    public DcMotor RightDriveBack = null;
+    public DcMotor Pulley = null;
+    public Servo   TopServo = null;
+    public Servo   BottomServo = null;
+    public Servo   ColorSensorArm =null;
+    public int     servovaluetop = 1;
+    public int     servovaluebottom = 1;
+    public int     LiftCountsPerInch = 475;
+    public ColorSensor ColorSensor;  // Hardware Device Object
 
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-
+        LeftDriveFront = hardwareMap.get(DcMotor.class, "left_drive");
+        RightDriveFront = hardwareMap.get(DcMotor.class, "right_drive");
+        LeftDriveBack = hardwareMap.get(DcMotor.class, "left_drive2");
+        RightDriveBack =  hardwareMap.get (DcMotor.class, "right_drive2");
+        Pulley =  hardwareMap.get (DcMotor.class, "pulley");
+        TopServo  =  hardwareMap.get (Servo.class, "top_servo");
+        BottomServo =  hardwareMap.get (Servo.class, "bottom_servo");
+        ColorSensorArm =  hardwareMap.get (Servo.class, "cs_servo");
+        ColorSensor =hardwareMap.get(ColorSensor.class,"sensor_color");
+        LeftDriveFront.setDirection(DcMotor.Direction.REVERSE);
+        RightDriveFront.setDirection(DcMotor.Direction.FORWARD);
+        LeftDriveBack.setDirection(DcMotor.Direction.REVERSE);
+        RightDriveBack.setDirection(DcMotor.Direction.FORWARD);
+        Pulley.setDirection(DcMotor.Direction.REVERSE);
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
@@ -70,24 +95,18 @@ public class Main6712 extends LinearOpMode {
         final float values[] = hsvValues;
         boolean bLedOn = true;
 
-
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
-        Robot.LeftDriveFront.setDirection(DcMotor.Direction.REVERSE);
-        Robot.RightDriveFront.setDirection(DcMotor.Direction.FORWARD);
-        Robot.LeftDriveBack.setDirection(DcMotor.Direction.REVERSE);
-        Robot.RightDriveBack.setDirection(DcMotor.Direction.FORWARD);
-        Robot.Pulley.setDirection(DcMotor.Direction.REVERSE);
 
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
-        Robot.Pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Robot.Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //Pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // Wait for the game to start (driver presses PLAY)
 
 
         waitForStart();
-        Robot.runtime.reset();
+        runtime.reset();
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -95,7 +114,7 @@ public class Main6712 extends LinearOpMode {
             double leftPower;
             double rightPower;
             double pulleyPower = 0;
-            int targetposition;
+            //int targetposition;
             // Choose to drive using either Tank Mode, or POV Mode
             // Comment out the method that's not used.  The default below is POV.
 
@@ -106,88 +125,88 @@ public class Main6712 extends LinearOpMode {
             double lift = gamepad1.right_stick_y;
             leftPower = Range.clip(drive + turn, -1.0, 1.0);
             rightPower = Range.clip(drive - turn, -1.0, 1.0);
-            pulleyPower = Range.clip(lift, -.5, .5);
+            pulleyPower = Range.clip(lift, -1, 1);
             //USED TO CONTROLL COLOR SENSOR ARM IN TELEOP IF NEEDED
             if (gamepad2.right_bumper) {
-                Robot.ColorSensorArm.setPosition(0);
+                ColorSensorArm.setPosition(0);
             } else if (gamepad2.left_bumper) {
-                Robot.ColorSensorArm.setPosition(.67);
+                ColorSensorArm.setPosition(.67);
             }
             //USE ALTERNATING VALUE PATTERN TO OPEN AND CLOSE THE TOP
             if (gamepad1.right_bumper) {
-                Robot.servovaluetop *= (-1);
+                servovaluetop *= (-1);
                 while (gamepad1.right_bumper) {
-                    Robot.servovaluetop = Robot.servovaluetop;
+                    servovaluetop = servovaluetop;
                 }
             }
             //USE ALTERNATING VALUE PATTERN TO OPEN AND CLOSE THE BOTTOM
 
             if (gamepad1.left_bumper) {
-                Robot.servovaluebottom *= (-1);
+                servovaluebottom *= (-1);
                 while (gamepad1.left_bumper) {
-                    Robot.servovaluebottom = Robot.servovaluebottom;
+                    servovaluebottom = servovaluebottom;
                 }
             }
             //USE ALTERNATING VALUE PATTERN TO OPEN AND CLOSE BOTH CLAWS
             if (gamepad1.right_stick_button) {
-                Robot.servovaluetop *= (-1);
-                Robot.servovaluebottom *= (-1);
+                servovaluetop *= (-1);
+                servovaluebottom *= (-1);
                 while (gamepad1.right_stick_button) {
-                    Robot.servovaluebottom = Robot.servovaluebottom;
-                    Robot.servovaluetop = Robot.servovaluetop;
+                    servovaluebottom = servovaluebottom;
+                    servovaluetop = servovaluetop;
                 }
             }
             //LIFT THE MAST UP USING ENCODERS
-            if (gamepad1.dpad_up) {
-                targetposition = Robot.Pulley.getCurrentPosition() + (6 * Robot.LiftCountsPerInch);
-                Robot.Pulley.setTargetPosition(targetposition);
-                Robot.Pulley.setPower(1);
+         /*   if (gamepad1.dpad_up) {
+                targetposition = Pulley.getCurrentPosition() + (6 * LiftCountsPerInch);
+                Pulley.setTargetPosition(targetposition);
+                Pulley.setPower(1);
                 while (gamepad1.dpad_up) {
                     targetposition = targetposition;
                 }
             }
             //MOVE THE MAST DOWN USING ENCODERS
             else if (gamepad1.dpad_down) {
-                targetposition = Robot.Pulley.getCurrentPosition() - (6 * Robot.LiftCountsPerInch);
-                Robot.Pulley.setTargetPosition(targetposition);
-                Robot.Pulley.setPower(1);
+                targetposition = Pulley.getCurrentPosition() - (6 * LiftCountsPerInch);
+                Pulley.setTargetPosition(targetposition);
+                Pulley.setPower(1);
                 while (gamepad1.dpad_down) {
                     targetposition = targetposition;
                 }
-            }
+            }*/
             //OPEN AMD CLOSE TOP CLAW
-            if (Robot.servovaluetop == -1) {
-                Robot.TopServo.setPosition(.5);
-            } else if (Robot.servovaluetop == 1) {
-                Robot.TopServo.setPosition(Servo.MAX_POSITION);
+            if (servovaluetop == -1) {
+                TopServo.setPosition(.5);
+            } else if (servovaluetop == 1) {
+                TopServo.setPosition(Servo.MAX_POSITION);
             }
             //OPEN AMD CLOSE BOTTOM CLAW
-            if (Robot.servovaluebottom == -1) {
-                Robot.BottomServo.setPosition(.5);
-            } else if (Robot.servovaluebottom == 1) {
-                Robot.BottomServo.setPosition(Servo.MAX_POSITION);
+            if (servovaluebottom == -1) {
+                BottomServo.setPosition(.5);
+            } else if (servovaluebottom == 1) {
+                BottomServo.setPosition(Servo.MAX_POSITION);
             }
 
 
             // Send calculated power to wheels
-            Robot.LeftDriveFront.setPower(leftPower);
-            Robot.RightDriveFront.setPower(rightPower);
-            Robot.LeftDriveBack.setPower(leftPower);
-            Robot.RightDriveBack.setPower(rightPower);
-            Robot.Pulley.setPower(pulleyPower);
+            LeftDriveFront.setPower(leftPower);
+            RightDriveFront.setPower(rightPower);
+            LeftDriveBack.setPower(leftPower);
+            RightDriveBack.setPower(rightPower);
+            Pulley.setPower(pulleyPower);
 
             // Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + Robot.runtime.toString());
+            telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-            telemetry.addData("Top Servo Position", Robot.TopServo.getPosition());
-            telemetry.addData("Bottom Servo Position", Robot.BottomServo.getPosition());
-            telemetry.addData("Cs Servo Position", Robot.ColorSensorArm.getPosition());
+            telemetry.addData("Top Servo Position", TopServo.getPosition());
+            telemetry.addData("Bottom Servo Position", BottomServo.getPosition());
+            telemetry.addData("Cs Servo Position", ColorSensorArm.getPosition());
             telemetry.addData("LED", bLedOn ? "On" : "Off");
-            telemetry.addData("Clear", Robot.ColorSensor.alpha());
-            telemetry.addData("Red  ", Robot.ColorSensor.red());
-            telemetry.addData("Green", Robot.ColorSensor.green());
-            telemetry.addData("Blue ", Robot.ColorSensor.blue());
+            telemetry.addData("Clear", ColorSensor.alpha());
+            telemetry.addData("Red  ", ColorSensor.red());
+            telemetry.addData("Green", ColorSensor.green());
+            telemetry.addData("Blue ", ColorSensor.blue());
             telemetry.update();
         }
     }
