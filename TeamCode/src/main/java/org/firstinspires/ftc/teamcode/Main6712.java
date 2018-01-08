@@ -53,18 +53,20 @@ import java.lang.annotation.Target;
 //@Disabled
 public class Main6712 extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
-    public DcMotor LeftDriveFront = null;
-    public DcMotor RightDriveFront = null;
-    public DcMotor LeftDriveBack = null;
-    public DcMotor RightDriveBack = null;
-    public DcMotor Pulley = null;
-    public Servo   TopServo = null;
-    public Servo   BottomServo = null;
-    public Servo   ColorSensorArm =null;
-    public int     servovaluetop = 1;
-    public int     servovaluebottom = 1;
-    public int     LiftCountsPerInch = 475;
-    public ColorSensor ColorSensor;  // Hardware Device Object
+    public ColorSensor  ColorSensor;
+    public DcMotor      LeftDriveFront = null;
+    public DcMotor      RightDriveFront = null;
+    public DcMotor      LeftDriveBack = null;
+    public DcMotor      RightDriveBack = null;
+    public DcMotor      Pulley = null;
+    public Servo        TopServo = null;
+    public Servo        BottomServo = null;
+    public Servo        ColorSensorArm =null;
+    public int          servovaluetop = 1;
+    public int          servovaluebottom = 1;
+    public int          LiftCountsPerInch = 475;
+    public int          LiftTargetPosition = 0;
+
 
     @Override
     public void runOpMode() {
@@ -84,6 +86,8 @@ public class Main6712 extends LinearOpMode {
         LeftDriveBack.setDirection(DcMotor.Direction.REVERSE);
         RightDriveBack.setDirection(DcMotor.Direction.FORWARD);
         Pulley.setDirection(DcMotor.Direction.REVERSE);
+        Pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
@@ -114,7 +118,7 @@ public class Main6712 extends LinearOpMode {
             double leftPower;
             double rightPower;
             double pulleyPower = 0;
-            //int targetposition;
+
             // Choose to drive using either Tank Mode, or POV Mode
             // Comment out the method that's not used.  The default below is POV.
 
@@ -157,23 +161,19 @@ public class Main6712 extends LinearOpMode {
                 }
             }
             //LIFT THE MAST UP USING ENCODERS
-         /*   if (gamepad1.dpad_up) {
-                targetposition = Pulley.getCurrentPosition() + (6 * LiftCountsPerInch);
-                Pulley.setTargetPosition(targetposition);
+           if (gamepad1.dpad_up) {
+                LiftTargetPosition = Pulley.getCurrentPosition() + (6 * LiftCountsPerInch);
+                Pulley.setTargetPosition(LiftTargetPosition);
                 Pulley.setPower(1);
-                while (gamepad1.dpad_up) {
-                    targetposition = targetposition;
-                }
+
             }
             //MOVE THE MAST DOWN USING ENCODERS
             else if (gamepad1.dpad_down) {
-                targetposition = Pulley.getCurrentPosition() - (6 * LiftCountsPerInch);
-                Pulley.setTargetPosition(targetposition);
+                LiftTargetPosition = Pulley.getCurrentPosition() - (6 * LiftCountsPerInch);
+                Pulley.setTargetPosition(LiftTargetPosition);
                 Pulley.setPower(1);
-                while (gamepad1.dpad_down) {
-                    targetposition = targetposition;
-                }
-            }*/
+
+            }
             //OPEN AMD CLOSE TOP CLAW
             if (servovaluetop == -1) {
                 TopServo.setPosition(.5);
@@ -202,6 +202,7 @@ public class Main6712 extends LinearOpMode {
             telemetry.addData("Top Servo Position", TopServo.getPosition());
             telemetry.addData("Bottom Servo Position", BottomServo.getPosition());
             telemetry.addData("Cs Servo Position", ColorSensorArm.getPosition());
+            telemetry.addData("pulley_position",Pulley.getCurrentPosition());
             telemetry.addData("LED", bLedOn ? "On" : "Off");
             telemetry.addData("Clear", ColorSensor.alpha());
             telemetry.addData("Red  ", ColorSensor.red());
