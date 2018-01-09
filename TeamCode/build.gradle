@@ -10,6 +10,3 @@
 // Custom definitions may go here
 // Include common definitions from above.
 apply from: '../build.common.gradle'
-dependencies {
-    compile files('C:/Users/brybr/Desktop/Github/Bulletproof-2017-2018/Bulletproof-2017-2018/libs/Vuforia.jar')
-}

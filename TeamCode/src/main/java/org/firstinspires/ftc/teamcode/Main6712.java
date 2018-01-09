@@ -86,8 +86,8 @@ public class Main6712 extends LinearOpMode {
         LeftDriveBack.setDirection(DcMotor.Direction.REVERSE);
         RightDriveBack.setDirection(DcMotor.Direction.FORWARD);
         Pulley.setDirection(DcMotor.Direction.REVERSE);
-        Pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+       // Pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
@@ -161,7 +161,7 @@ public class Main6712 extends LinearOpMode {
                 }
             }
             //LIFT THE MAST UP USING ENCODERS
-           if (gamepad1.dpad_up) {
+          /* if (gamepad1.dpad_up) {
                 LiftTargetPosition = Pulley.getCurrentPosition() + (6 * LiftCountsPerInch);
                 Pulley.setTargetPosition(LiftTargetPosition);
                 Pulley.setPower(1);
@@ -172,8 +172,7 @@ public class Main6712 extends LinearOpMode {
                 LiftTargetPosition = Pulley.getCurrentPosition() - (6 * LiftCountsPerInch);
                 Pulley.setTargetPosition(LiftTargetPosition);
                 Pulley.setPower(1);
-
-            }
+            }*/
             //OPEN AMD CLOSE TOP CLAW
             if (servovaluetop == -1) {
                 TopServo.setPosition(.5);

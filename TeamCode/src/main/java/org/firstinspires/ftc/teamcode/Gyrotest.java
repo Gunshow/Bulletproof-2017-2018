@@ -29,134 +29,74 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
+import com.qualcomm.hardware.hitechnic.HiTechnicNxtGyroSensor;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gyroscope;
 import com.qualcomm.robotcore.hardware.IntegratingGyroscope;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 /*
- * This is an example LinearOpMode that shows how to use the Modern Robotics Gyro.
- *
- * The op mode assumes that the gyro sensor is attached to a Device Interface Module
- * I2C channel and is configured with a name of "gyro".
+ * This is an example LinearOpMode that shows how to use a legacy (NXT-compatible)
+ * HiTechnic gyroscope. It assumes that the gyroscope is configured with a name of "gyro".
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
-*/
-@TeleOp(name = "Sensor: MR Gyro", group = "Sensor")
-@Disabled
+ * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list.
+ */
+@Autonomous(name = "Sensor: HT Gyro", group = "Sensor")
+//@Disabled
 public class Gyrotest extends LinearOpMode {
 
-  /** In this sample, for illustration purposes we use two interfaces on the one gyro object.
-   * That's likely atypical: you'll probably use one or the other in any given situation,
-   * depending on what you're trying to do. {@link IntegratingGyroscope} (and it's base interface,
-   * {@link Gyroscope}) are common interfaces supported by possibly several different gyro
-   * implementations. {@link ModernRoboticsI2cGyro}, by contrast, provides functionality that
-   * is unique to the Modern Robotics gyro sensor.
-   */
-  IntegratingGyroscope gyro;
-  ModernRoboticsI2cGyro modernRoboticsI2cGyro;
+    /** In this sample, for illustration purposes we use two interfaces on the one gyro object.
+     * That's likely atypical: you'll probably use one or the other in any given situation,
+     * depending on what you're trying to do. {@link IntegratingGyroscope} (and it's base interface,
+     * {@link Gyroscope}) are common interfaces supported by possibly several different gyro
+     * implementations. {@link HiTechnicNxtGyroSensor}, by contrast, provides functionality that
+     * is unique to the HiTechnic gyro sensor.
+     */
+    Gyroscope gyroscope;
+    HiTechnicNxtGyroSensor hiTechnicNxtGyroSensor;
 
-  // A timer helps provide feedback while calibration is taking place
-  ElapsedTime timer = new ElapsedTime();
+    @Override public void runOpMode() throws InterruptedException {
 
-  @Override
-  public void runOpMode() {
+        // Get a reference to the gyroscope from the hardware map
+        gyroscope = hardwareMap.get(Gyroscope.class, "gyro");
 
-    boolean lastResetState = false;
-    boolean curResetState  = false;
+        // Get a reference to the *implementation* of the gyroscope on the HiTechnic sensor.
+        // Usually, you won't need to examine internal implementation details in this way, but
+        // we do so to illustrate aspects of what is going on inside the sensor.
+        hiTechnicNxtGyroSensor = hardwareMap.get(HiTechnicNxtGyroSensor.class, "gyro");
+        // Alternately, we could have cast: hiTechnicNxtGyroSensor = (HiTechnicNxtGyroSensor)gyro;
 
-    // Get a reference to a Modern Robotics gyro object. We use several interfaces
-    // on this object to illustrate which interfaces support which functionality.
-    modernRoboticsI2cGyro = hardwareMap.get(ModernRoboticsI2cGyro.class, "gyro");
-    gyro = (IntegratingGyroscope)modernRoboticsI2cGyro;
-    // If you're only interested int the IntegratingGyroscope interface, the following will suffice.
-    // gyro = hardwareMap.get(IntegratingGyroscope.class, "gyro");
-    // A similar approach will work for the Gyroscope interface, if that's all you need.
+        // Optionally, calibrate the gyro to establish a good value for its "zero deg/s" bias
+        // voltage value. Calibration is not entirely necessary, as the default bias voltage
+        // usually does a reasonable job. While calibration is performed, the gyro must remain
+        // motionless. Note that for this gyro sensor, calibration data is not persistently
+        // written to EEPROM, but rather should be performed each run.
+        telemetry.log().add("calibrating...");
+        hiTechnicNxtGyroSensor.calibrate(3000, 100);
+        telemetry.log().add("...done...waiting for start...");
 
-    // Start calibrating the gyro. This takes a few seconds and is worth performing
-    // during the initialization phase at the start of each opMode.
-    telemetry.log().add("Gyro Calibrating. Do Not Move!");
-    modernRoboticsI2cGyro.calibrate();
+        // wait for the start button to be pressed.
+        waitForStart();
+        telemetry.log().clear();
 
-    // Wait until the gyro calibration is complete
-    timer.reset();
-    while (!isStopRequested() && modernRoboticsI2cGyro.isCalibrating())  {
-      telemetry.addData("calibrating", "%s", Math.round(timer.seconds())%2==0 ? "|.." : "..|");
-      telemetry.update();
-      sleep(50);
+        // loop until the opmode has been asked to stop
+        while (opModeIsActive()) {
+
+            double raw = hiTechnicNxtGyroSensor.readRawVoltage();
+            double bias = hiTechnicNxtGyroSensor.getBiasVoltage();
+
+            telemetry.addData("rate", "%.4f deg/s",      gyroscope.getAngularVelocity(AngleUnit.DEGREES).zRotationRate);
+            telemetry.addData("raw ", "%.4fv",           raw);
+            telemetry.addData("bias", "%.4fv",           bias);
+            telemetry.addData("volts", "%.4fv",          raw-bias);
+            telemetry.addData("deg/s/v", "%.4f deg/s/v", hiTechnicNxtGyroSensor.getDefaultDegreesPerSecondPerVolt());
+
+            telemetry.update();
+            idle();
+        }
     }
-
-    telemetry.log().clear(); telemetry.log().add("Gyro Calibrated. Press Start.");
-    telemetry.clear(); telemetry.update();
-
-    // Wait for the start button to be pressed
-    waitForStart();
-    telemetry.log().clear();
-    telemetry.log().add("Press A & B to reset heading");
-
-    // Loop until we're asked to stop
-    while (opModeIsActive())  {
-
-      // If the A and B buttons are pressed just now, reset Z heading.
-      curResetState = (gamepad1.a && gamepad1.b);
-      if (curResetState && !lastResetState) {
-        modernRoboticsI2cGyro.resetZAxisIntegrator();
-      }
-      lastResetState = curResetState;
-
-      // The raw() methods report the angular rate of change about each of the
-      // three axes directly as reported by the underlying sensor IC.
-      int rawX = modernRoboticsI2cGyro.rawX();
-      int rawY = modernRoboticsI2cGyro.rawY();
-      int rawZ = modernRoboticsI2cGyro.rawZ();
-      int heading = modernRoboticsI2cGyro.getHeading();
-      int integratedZ = modernRoboticsI2cGyro.getIntegratedZValue();
-
-      // Read dimensionalized data from the gyro. This gyro can report angular velocities
-      // about all three axes. Additionally, it internally integrates the Z axis to
-      // be able to report an absolute angular Z orientation.
-      AngularVelocity rates = gyro.getAngularVelocity(AngleUnit.DEGREES);
-      float zAngle = gyro.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
-
-      // Read administrative information from the gyro
-      int zAxisOffset = modernRoboticsI2cGyro.getZAxisOffset();
-      int zAxisScalingCoefficient = modernRoboticsI2cGyro.getZAxisScalingCoefficient();
-
-      telemetry.addLine()
-        .addData("dx", formatRate(rates.xRotationRate))
-        .addData("dy", formatRate(rates.yRotationRate))
-        .addData("dz", "%s deg/s", formatRate(rates.zRotationRate));
-      telemetry.addData("angle", "%s deg", formatFloat(zAngle));
-      telemetry.addData("heading", "%3d deg", heading);
-      telemetry.addData("integrated Z", "%3d", integratedZ);
-      telemetry.addLine()
-        .addData("rawX", formatRaw(rawX))
-        .addData("rawY", formatRaw(rawY))
-        .addData("rawZ", formatRaw(rawZ));
-      telemetry.addLine().addData("z offset", zAxisOffset).addData("z coeff", zAxisScalingCoefficient);
-      telemetry.update();
-    }
-  }
-
-  String formatRaw(int rawValue) {
-    return String.format("%d", rawValue);
-  }
-
-  String formatRate(float rate) {
-    return String.format("%.3f", rate);
-  }
-
-  String formatFloat(float rate) {
-    return String.format("%.3f", rate);
-  }
-
 }
