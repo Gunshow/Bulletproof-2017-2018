@@ -59,11 +59,15 @@ public class Main6712 extends LinearOpMode {
     public DcMotor      LeftDriveBack = null;
     public DcMotor      RightDriveBack = null;
     public DcMotor      Pulley = null;
+    public DcMotor      RelicArm =  null;
     public Servo        TopServo = null;
     public Servo        BottomServo = null;
     public Servo        ColorSensorArm =null;
+    public Servo        RelicServo = null;
     public int          servovaluetop = 1;
     public int          servovaluebottom = 1;
+    public int          servovaluerelic1 = 1;
+    public int          servovaluerelic2 = 1;
     public int          LiftCountsPerInch = 475;
     public int          LiftTargetPosition = 0;
 
@@ -81,11 +85,13 @@ public class Main6712 extends LinearOpMode {
         BottomServo =  hardwareMap.get (Servo.class, "bottom_servo");
         ColorSensorArm =  hardwareMap.get (Servo.class, "cs_servo");
         ColorSensor =hardwareMap.get(ColorSensor.class,"sensor_color");
+        RelicArm = hardwareMap.get(DcMotor.class, "relic_arm");
         LeftDriveFront.setDirection(DcMotor.Direction.REVERSE);
         RightDriveFront.setDirection(DcMotor.Direction.FORWARD);
         LeftDriveBack.setDirection(DcMotor.Direction.REVERSE);
         RightDriveBack.setDirection(DcMotor.Direction.FORWARD);
         Pulley.setDirection(DcMotor.Direction.REVERSE);
+        RelicArm.setDirection(DcMotor.Direction.REVERSE);
        // Pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         //Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -117,25 +123,39 @@ public class Main6712 extends LinearOpMode {
             // Setup a variable for each drive wheel to save power level for telemetr
             double leftPower;
             double rightPower;
-            double pulleyPower = 0;
+            double pulleyPower;
+            double relicPower;
 
             // Choose to drive using either Tank Mode, or POV Mode
             // Comment out the method that's not used.  The default below is POV.
 
             // POV Mode uses left stick to go forward, and right stick to turn.
             // - This uses basic math to combine motions and is easier to drive straight.
-            double drive = gamepad1.left_stick_y;
-            double turn = -gamepad1.left_stick_x;//no negative
+            double drive  = gamepad1.left_stick_y;
+            double turn   = -gamepad1.left_stick_x;//no negative
             double lift = gamepad1.right_stick_y;
+            double relic = gamepad2.right_stick_y;
             leftPower = Range.clip(drive + turn, -1.0, 1.0);
             rightPower = Range.clip(drive - turn, -1.0, 1.0);
             pulleyPower = Range.clip(lift, -1, 1);
+            relicPower = Range.clip(relic,-1,1);
             //USED TO CONTROLL COLOR SENSOR ARM IN TELEOP IF NEEDED
-            if (gamepad2.right_bumper) {
+            if (gamepad2.a) {
                 ColorSensorArm.setPosition(0);
-            } else if (gamepad2.left_bumper) {
-                ColorSensorArm.setPosition(.67);
             }
+            if(gamepad2.right_bumper){
+                servovaluerelic1*= (-1);
+                while (gamepad2.right_bumper){
+                    servovaluerelic1 = servovaluerelic1;
+                }
+            }
+            if(gamepad2.left_bumper){
+                servovaluerelic2*= (-1);
+                while (gamepad2.right_bumper){
+                    servovaluerelic2 = servovaluerelic2;
+                }
+            }
+
             //USE ALTERNATING VALUE PATTERN TO OPEN AND CLOSE THE TOP
             if (gamepad1.right_bumper) {
                 servovaluetop *= (-1);
@@ -175,7 +195,7 @@ public class Main6712 extends LinearOpMode {
             }*/
             //OPEN AMD CLOSE TOP CLAW
             if (servovaluetop == -1) {
-                TopServo.setPosition(.5);
+                TopServo.setPosition(0);
             } else if (servovaluetop == 1) {
                 TopServo.setPosition(Servo.MAX_POSITION);
             }
@@ -185,6 +205,18 @@ public class Main6712 extends LinearOpMode {
             } else if (servovaluebottom == 1) {
                 BottomServo.setPosition(Servo.MAX_POSITION);
             }
+            /*if (servovaluerelic1 == -1) {
+                .setPosition(0);
+            } else if (servovaluebottom == 1) {
+                BottomServo.setPosition(.5);
+            }
+            if (servovaluerelic2 == -1) {
+                BottomServo.setPosition(0);
+            } else if (servovaluebottom == 1) {
+                BottomServo.setPosition(1);
+            }*/
+
+
 
 
             // Send calculated power to wheels
@@ -193,6 +225,7 @@ public class Main6712 extends LinearOpMode {
             LeftDriveBack.setPower(leftPower);
             RightDriveBack.setPower(rightPower);
             Pulley.setPower(pulleyPower);
+            RelicArm.setPower(relicPower);
 
             // Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             // Show the elapsed game time and wheel power.

@@ -57,7 +57,7 @@ public class Gyrotest extends LinearOpMode {
      * is unique to the HiTechnic gyro sensor.
      */
     Gyroscope gyroscope;
-    HiTechnicNxtGyroSensor hiTechnicNxtGyroSensor;
+    HiTechnicNxtGyroSensor gyro;
 
     @Override public void runOpMode() throws InterruptedException {
 
@@ -67,8 +67,8 @@ public class Gyrotest extends LinearOpMode {
         // Get a reference to the *implementation* of the gyroscope on the HiTechnic sensor.
         // Usually, you won't need to examine internal implementation details in this way, but
         // we do so to illustrate aspects of what is going on inside the sensor.
-        hiTechnicNxtGyroSensor = hardwareMap.get(HiTechnicNxtGyroSensor.class, "gyro");
-        // Alternately, we could have cast: hiTechnicNxtGyroSensor = (HiTechnicNxtGyroSensor)gyro;
+        gyro = hardwareMap.get(HiTechnicNxtGyroSensor.class, "gyro");
+        // Alternately, we could have cast: gyro = (HiTechnicNxtGyroSensor)gyro;
 
         // Optionally, calibrate the gyro to establish a good value for its "zero deg/s" bias
         // voltage value. Calibration is not entirely necessary, as the default bias voltage
@@ -76,7 +76,7 @@ public class Gyrotest extends LinearOpMode {
         // motionless. Note that for this gyro sensor, calibration data is not persistently
         // written to EEPROM, but rather should be performed each run.
         telemetry.log().add("calibrating...");
-        hiTechnicNxtGyroSensor.calibrate(3000, 100);
+        gyro.calibrate(3000, 100);
         telemetry.log().add("...done...waiting for start...");
 
         // wait for the start button to be pressed.
@@ -86,14 +86,13 @@ public class Gyrotest extends LinearOpMode {
         // loop until the opmode has been asked to stop
         while (opModeIsActive()) {
 
-            double raw = hiTechnicNxtGyroSensor.readRawVoltage();
-            double bias = hiTechnicNxtGyroSensor.getBiasVoltage();
-
+            double raw = gyro.readRawVoltage();
+            double bias = gyro.getBiasVoltage();
             telemetry.addData("rate", "%.4f deg/s",      gyroscope.getAngularVelocity(AngleUnit.DEGREES).zRotationRate);
             telemetry.addData("raw ", "%.4fv",           raw);
             telemetry.addData("bias", "%.4fv",           bias);
             telemetry.addData("volts", "%.4fv",          raw-bias);
-            telemetry.addData("deg/s/v", "%.4f deg/s/v", hiTechnicNxtGyroSensor.getDefaultDegreesPerSecondPerVolt());
+            telemetry.addData("deg/s/v", "%.4f deg/s/v", gyro.getDefaultDegreesPerSecondPerVolt());
 
             telemetry.update();
             idle();

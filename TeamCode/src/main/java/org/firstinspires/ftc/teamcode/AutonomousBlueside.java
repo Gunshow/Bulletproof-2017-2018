@@ -165,17 +165,24 @@ public class AutonomousBlueside extends LinearOpMode {
         BottomServo.setPosition(.5);                                       // S1:Grab cube
         TopServo.setPosition(.5);
         sleep(1000);                                                // pause for servos to move
-        encoderDrive(DRIVE_SPEED,  41,41,0,   2);     // S3: Turn towards glyph Box
-       /*  encoderDrive(DRIVE_SPEED, 18, 18, 0,2);     // S4: drive into glyph box
-        BottomServo.setPosition(1);                                      // S5: Release Cube
-        TopServo.setPosition(1);*/
-        sleep(1000);                                               // pause for servos to move
-       /* encoderDrive(DRIVE_SPEED, -18, -18,0, 2);  //S6:Backout of Glyph Box
-        encoderDrive(TURN_SPEED, 35.16 , -35.16 , 0,2  );  //S7 Turn around 180
-       encoderDrive(DRIVE_SPEED, 12,-12,0,2);    //S8:Backup and park
-       sleep(1000);                                               // pause for servos to move
-//5.416 degrees turn = 1 inch*/
-        telemetry.addData("Path", "Complete");
+        ColorSensorArm.setPosition(.8);
+        sleep(1000);
+        /*if (  ColorSensor.red() <   ColorSensor.blue()) {
+            encoderDrive(DRIVE_SPEED,5,5,3);
+            telemetry.addData("Color", "blue");}
+        if (  ColorSensor.blue() <   ColorSensor.red()) {
+            encoderDrive(DRIVE_SPEED,-5,-5,3);
+            telemetry.addData("Color", "red");}
+        ColorSensorArm.setPosition(0);*/
+        ColorSensorArm.setPosition(.75);
+        sleep(1000);
+        if (  ColorSensor.red() <   ColorSensor.blue()) {
+            encoderDrive(DRIVE_SPEED,5,5,3);
+            telemetry.addData("Color", "blue");}
+        if (  ColorSensor.blue() <   ColorSensor.red()) {
+            encoderDrive(DRIVE_SPEED,-5,-5,3);
+            telemetry.addData("Color", "red");}
+        ColorSensorArm.setPosition(0);        telemetry.addData("Path", "Complete");
         telemetry.update();
     }
 //1 lift inch is = 6.25 inchs '
@@ -183,14 +190,14 @@ public class AutonomousBlueside extends LinearOpMode {
     private void encoderDrive(double speed,
                              double leftInches,
                              double rightInches,
-                             double liftInches,
+                            // double liftInches,
                              double timeoutS) {
 
         int newLeftTarget;
         int newRightTarget;
         int newLeftTarget2;
         int newRightTarget2;
-        int newLiftTarget;
+     //   int newLiftTarget;
         // Ensure that the opmode is still active
         if (opModeIsActive()) {
 
@@ -200,19 +207,19 @@ public class AutonomousBlueside extends LinearOpMode {
             newRightTarget = RightDriveFront.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
             newLeftTarget2 = LeftDriveBack.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
             newRightTarget2 = RightDriveBack.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            newLiftTarget = Pulley.getCurrentPosition()  + (int)(liftInches * COUNTS_PER_INCH_Lift);
+            //newLiftTarget = Pulley.getCurrentPosition()  + (int)(liftInches * COUNTS_PER_INCH_Lift);
             LeftDriveFront.setTargetPosition(newLeftTarget);
             RightDriveFront.setTargetPosition(newRightTarget);
             LeftDriveBack.setTargetPosition(newLeftTarget2);
             RightDriveBack.setTargetPosition(newRightTarget2);
-            Pulley.setTargetPosition(newLiftTarget);
+        //    Pulley.setTargetPosition(newLiftTarget);
 
             // Turn On RUN_TO_POSITION
             LeftDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             RightDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             LeftDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             RightDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+           // Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             // reset the timeout time and start motion.
             runtime.reset();
@@ -220,7 +227,7 @@ public class AutonomousBlueside extends LinearOpMode {
             RightDriveFront.setPower(Math.abs(speed));
             LeftDriveBack.setPower(Math.abs(speed));
             RightDriveBack.setPower(Math.abs(speed));
-            Pulley.setPower(Math.abs(speed));
+            //Pulley.setPower(Math.abs(speed));
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
@@ -230,13 +237,13 @@ public class AutonomousBlueside extends LinearOpMode {
             // onto the next step, use (isBusy() || isBusy()) in the loop test.
             while (opModeIsActive() &&
                     (runtime.seconds() < timeoutS) &&
-                    (LeftDriveFront.isBusy() && RightDriveFront.isBusy() && Pulley.isBusy()
+                    (LeftDriveFront.isBusy() && RightDriveFront.isBusy()// && //Pulley.isBusy()
                             && LeftDriveBack.isBusy() && RightDriveBack.isBusy())) {
 
                 // Display it for the driver.
-                telemetry.addData("Path1",  "Running to %7d :%7d", newLeftTarget,  newRightTarget, newLiftTarget,newLeftTarget2,  newRightTarget2);
+                telemetry.addData("Path1",  "Running to %7d :%7d", newLeftTarget,  newRightTarget, newLeftTarget2,  newRightTarget2);//newLiftTarget
                 telemetry.addData("Path2",  "Running at %7d :%7d",
-                        Pulley.getCurrentPosition(),
+                        //Pulley.getCurrentPosition(),
                         LeftDriveFront.getCurrentPosition(),
                         RightDriveFront.getCurrentPosition(),
                         LeftDriveBack.getCurrentPosition(),
@@ -249,14 +256,14 @@ public class AutonomousBlueside extends LinearOpMode {
             RightDriveFront.setPower(0);
             LeftDriveBack.setPower(0);
             RightDriveBack.setPower(0);
-            Pulley.setPower(0);
+          //  Pulley.setPower(0);
 
             // Turn off RUN_TO_POSITION
             LeftDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             LeftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             RightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            Pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+           // Pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             //  sleep(250);   // optional pause after each move
 
