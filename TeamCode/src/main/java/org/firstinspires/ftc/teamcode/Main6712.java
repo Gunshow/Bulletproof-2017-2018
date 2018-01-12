@@ -147,7 +147,7 @@ public class Main6712 extends LinearOpMode {
                 ColorSensorArm.setPosition(0);
             }
             if (gamepad2.b){
-                ColorSensorArm.setPosition(.8);
+                ColorSensorArm.setPosition(.85);
             }
 
             if(gamepad2.right_bumper){
@@ -212,16 +212,16 @@ public class Main6712 extends LinearOpMode {
             } else if (servovaluebottom == 1) {
                 BottomServo.setPosition(Servo.MAX_POSITION);
             }
-            /*if (servovaluerelic1 == -1) {
-                .setPosition(0);
+            if (servovaluerelic1 == -1) {
+                RelicServo.setPosition(0);
             } else if (servovaluebottom == 1) {
-                BottomServo.setPosition(.5);
+                RelicServo.setPosition(1);
             }
             if (servovaluerelic2 == -1) {
-                BottomServo.setPosition(0);
+                RelicServoClaw.setPosition(0);
             } else if (servovaluebottom == 1) {
-                BottomServo.setPosition(1);
-            }*/
+                RelicServoClaw.setPosition(.5);
+            }
 
 
 
