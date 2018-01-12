@@ -64,6 +64,7 @@ public class Main6712 extends LinearOpMode {
     public Servo        BottomServo = null;
     public Servo        ColorSensorArm =null;
     public Servo        RelicServo = null;
+    public Servo        RelicServoClaw = null;
     public int          servovaluetop = 1;
     public int          servovaluebottom = 1;
     public int          servovaluerelic1 = 1;
@@ -86,6 +87,8 @@ public class Main6712 extends LinearOpMode {
         ColorSensorArm =  hardwareMap.get (Servo.class, "cs_servo");
         ColorSensor =hardwareMap.get(ColorSensor.class,"sensor_color");
         RelicArm = hardwareMap.get(DcMotor.class, "relic_arm");
+        RelicServo =  hardwareMap.get (Servo.class, "relic_servo");
+        RelicServoClaw =  hardwareMap.get (Servo.class, "relic_servo");
         LeftDriveFront.setDirection(DcMotor.Direction.REVERSE);
         RightDriveFront.setDirection(DcMotor.Direction.FORWARD);
         LeftDriveBack.setDirection(DcMotor.Direction.REVERSE);
@@ -143,6 +146,10 @@ public class Main6712 extends LinearOpMode {
             if (gamepad2.a) {
                 ColorSensorArm.setPosition(0);
             }
+            if (gamepad2.b){
+                ColorSensorArm.setPosition(.8);
+            }
+
             if(gamepad2.right_bumper){
                 servovaluerelic1*= (-1);
                 while (gamepad2.right_bumper){
