@@ -10,3 +10,16 @@
 // Custom definitions may go here
 // Include common definitions from above.
 apply from: '../build.common.gradle'
+
+dependencies {
+    compile files('../libs/Vuforia.jar')
+}
+android {
+    android {
+       defaultConfig {
+            multiDexEnabled true
+            minSdkVersion 21
+        }
+    }
+}
+

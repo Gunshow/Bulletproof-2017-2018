@@ -43,6 +43,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
+import org.firstinspires.ftc.teamcode.input.Input;
+import org.firstinspires.ftc.teamcode.input.InputHandlerThread;
 
 import java.lang.annotation.Target;
 
@@ -53,25 +55,24 @@ import java.lang.annotation.Target;
 //@Disabled
 public class Main6712 extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
-    public ColorSensor  ColorSensor;
-    public DcMotor      LeftDriveFront = null;
-    public DcMotor      RightDriveFront = null;
-    public DcMotor      LeftDriveBack = null;
-    public DcMotor      RightDriveBack = null;
-    public DcMotor      Pulley = null;
-    public DcMotor      RelicArm =  null;
-    public Servo        TopServo = null;
-    public Servo        BottomServo = null;
-    public Servo        ColorSensorArm =null;
-    public Servo        RelicServo = null;
-    public Servo        RelicServoClaw = null;
-    public int          servovaluetop = 1;
-    public int          servovaluebottom = 1;
-    public int          servovaluerelic1 = 1;
-    public int          servovaluerelic2 = 1;
-    public int          LiftCountsPerInch = 475;
-    public int          LiftTargetPosition = 0;
-
+    private ColorSensor  ColorSensor;
+    private DcMotor      LeftDriveFront = null;
+    private DcMotor      RightDriveFront = null;
+    private DcMotor      LeftDriveBack = null;
+    private DcMotor      RightDriveBack = null;
+    private DcMotor      Pulley = null;
+    private DcMotor      RelicArm =  null;
+    private Servo        TopServo = null;
+    private Servo        BottomServo = null;
+    private Servo        ColorSensorArm =null;
+    private Servo        RelicServo = null;
+    private Servo        RelicServoClaw = null;
+    private int          servovaluetop = 1;
+    private int          servovaluebottom = 1;
+    private int          servovaluerelic1 = 1;
+    private int          servovaluerelic2 = 1;
+    private int          LiftCountsPerInch = 475;
+    private int          LiftTargetPosition = 0;
 
     @Override
     public void runOpMode() {
@@ -95,160 +96,162 @@ public class Main6712 extends LinearOpMode {
         RightDriveBack.setDirection(DcMotor.Direction.FORWARD);
         Pulley.setDirection(DcMotor.Direction.REVERSE);
         RelicArm.setDirection(DcMotor.Direction.REVERSE);
-       // Pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        //Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
-        // Motors labeled if your looking at the FRONT of the robot
-        // hsvValues is an array that will hold the hue, saturation, and value information.
-        float hsvValues[] = {0F, 0F, 0F};
-
-        // values is a reference to the hsvValues array.
-        final float values[] = hsvValues;
-        boolean bLedOn = true;
-
-        // Most robots need the motor on one side to be reversed to drive forward
-        // Reverse the motor that runs backwards when connected directly to the battery
-
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
         //Pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         //Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // Wait for the game to start (driver presses PLAY)
 
-
         waitForStart();
+
+
+        InputHandlerThread handlerG1 = new InputHandlerThread(this,gamepad1);
+        InputHandlerThread handlerG2 = new InputHandlerThread(this,gamepad2);
+        
+        //USED TO CONTROLL COLOR SENSOR ARM IN TELEOP IF NEEDED
+        handlerG2.registerListener(Input.Source.A,
+                new Input.Listener() {
+                    @Override
+                    public void input() {
+                        ColorSensorArm.setPosition(0);
+                    }
+                });
+        handlerG2.registerListener(Input.Source.B,
+                new Input.Listener() {
+                    @Override
+                    public void input() {
+                        ColorSensorArm.setPosition(.85d);
+                    }
+                });
+        handlerG2.registerListener(Input.Source.RIGHT_BUMPER,
+                new Input.Listener() {
+                    @Override
+                    public void input() {
+                        servovaluerelic1 *= -1;
+                    }
+                });
+        handlerG2.registerListener(Input.Source.LEFT_BUMPER,
+                new Input.Listener() {
+                    @Override
+                    public void input() {
+                        servovaluerelic2 *= -1;
+                    }
+                });
+        //USE ALTERNATING VALUE PATTERN TO OPEN AND CLOSE THE TOP
+        handlerG2.registerListener(Input.Source.LEFT_BUMPER,
+                new Input.Listener() {
+                    @Override
+                    public void input() {
+                        ColorSensorArm.setPosition(2d / 3d);
+                    }
+                });
+        //USE ALTERNATING VALUE PATTERN TO OPEN AND CLOSE THE BOTTOM
+        handlerG1.registerListener(Input.Source.RIGHT_BUMPER,
+                new Input.Listener() {
+                    @Override
+                    public void input() {
+                        servovaluetop *= -1;
+                    }
+                });
+        handlerG1.registerListener(Input.Source.RIGHT_BUMPER,
+                new Input.Listener() {
+                    @Override
+                    public void input() {
+                        servovaluebottom *= -1;
+                    }
+                });
+        //USE ALTERNATING VALUE PATTERN TO OPEN AND CLOSE BOTH CLAWS
+        handlerG1.registerListener(Input.Source.RIGHT_STICK_BUTTON,
+                new Input.Listener() {
+                    @Override
+                    public void input() {
+                        servovaluetop *= -1;
+                        servovaluebottom *= -1;
+                    }
+                });
+        //LIFT THE MAST UP USING ENCODERS
+        handlerG1.registerListener(Input.Source.DPAD_UP,
+                new Input.Listener() {
+                    @Override
+                    public void input()
+                        {
+                            LiftTargetPosition = Pulley.getCurrentPosition() + (6 * LiftCountsPerInch);
+                            Pulley.setTargetPosition(LiftTargetPosition);
+                            Pulley.setPower(1);
+                        }
+
+                } );
+        //MOVE THE MAST DOWN USING ENCODERS
+        handlerG1.registerListener(Input.Source.DPAD_DOWN,
+                new Input.Listener() {
+                    @Override
+                    public void input(){
+                        LiftTargetPosition = Pulley.getCurrentPosition() - (6 * LiftCountsPerInch);
+                        Pulley.setTargetPosition(LiftTargetPosition);
+                        Pulley.setPower(1);
+                    }
+                });
+
+        /*contains actions that are executed every iteration
+        (setting the wheel and pulley power, telemetry).*/
+        handlerG2.addIterationRunnable(new Runnable() {
+            @Override
+            public void run() {
+                // Choose to drive using either Tank Mode, or POV Mode
+                // Comment out the method that's not used.  The default below is POV.
+
+                // POV Mode uses left stick to go forward, and right stick to turn.
+                // - This uses basic math to combine motions and is easier to drive straight.
+                double drive = gamepad1.left_stick_y;
+                double turn = -gamepad1.left_stick_x;//no negative
+                double lift = gamepad1.right_stick_y;
+                double relic = gamepad2.right_stick_y;
+                // Setup a variable for each drive wheel to save power level for telemetry
+                double leftPower = Range.clip(drive + turn, -1.0, 1.0);
+                double rightPower = Range.clip(drive - turn, -1.0, 1.0);
+                double pulleyPower = Range.clip(lift, -1, 1);
+                double relicPower = Range.clip(relic,-1,1);
+
+                //OPEN AMD CLOSE TOP CLAW
+                TopServo.setPosition((servovaluetop == -1) ? 0.5d : Servo.MAX_POSITION);
+
+                //OPEN AMD CLOSE BOTTOM CLAW
+                BottomServo.setPosition((servovaluebottom == -1) ? 0.5d : Servo.MAX_POSITION);
+
+                RelicServo.setPosition(servovaluerelic1 == -1 ? .5d : Servo.MAX_POSITION);
+
+                RelicServoClaw.setPosition(servovaluerelic2 == -1 ? 0 : .5d);
+
+                // Send calculated power to wheels
+                LeftDriveFront.setPower(leftPower);
+                RightDriveFront.setPower(rightPower);
+                LeftDriveBack.setPower(leftPower);
+                RightDriveBack.setPower(rightPower);
+                Pulley.setPower(pulleyPower);
+                RelicArm.setPower(relicPower);
+
+                // Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                // Show the elapsed game time and wheel power.
+                telemetry.addData("Status", "Run Time: " + runtime.toString());
+                telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+                telemetry.addData("Top Servo Position", TopServo.getPosition());
+                telemetry.addData("Bottom Servo Position", BottomServo.getPosition());
+                telemetry.addData("Cs Servo Position", ColorSensorArm.getPosition());
+                telemetry.addData("pulley_position",Pulley.getCurrentPosition());
+                //telemetry.addData("LED", bLedOn ? "On" : "Off");
+                telemetry.addData("Clear", ColorSensor.alpha());
+                telemetry.addData("Red  ", ColorSensor.red());
+                telemetry.addData("Green", ColorSensor.green());
+                telemetry.addData("Blue ", ColorSensor.blue());
+                telemetry.update();
+            }
+        });
+
+        handlerG1.start();
+        handlerG2.start();
+
         runtime.reset();
 
-        // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
-            // Setup a variable for each drive wheel to save power level for telemetr
-            double leftPower;
-            double rightPower;
-            double pulleyPower;
-            double relicPower;
-
-            // Choose to drive using either Tank Mode, or POV Mode
-            // Comment out the method that's not used.  The default below is POV.
-
-            // POV Mode uses left stick to go forward, and right stick to turn.
-            // - This uses basic math to combine motions and is easier to drive straight.
-            double drive  = gamepad1.left_stick_y;
-            double turn   = -gamepad1.left_stick_x;//no negative
-            double lift = gamepad1.right_stick_y;
-            double relic = gamepad2.right_stick_y;
-            leftPower = Range.clip(drive + turn, -1.0, 1.0);
-            rightPower = Range.clip(drive - turn, -1.0, 1.0);
-            pulleyPower = Range.clip(lift, -1, 1);
-            relicPower = Range.clip(relic,-1,1);
-            //USED TO CONTROLL COLOR SENSOR ARM IN TELEOP IF NEEDED
-            if (gamepad2.a) {
-                ColorSensorArm.setPosition(0);
-            }
-            if (gamepad2.b){
-                ColorSensorArm.setPosition(.85);
-            }
-
-            if(gamepad2.right_bumper){
-                servovaluerelic1*= (-1);
-                while (gamepad2.right_bumper){
-                    servovaluerelic1 = servovaluerelic1;
-                }
-            }
-            if(gamepad2.left_bumper){
-                servovaluerelic2*= (-1);
-                while (gamepad2.right_bumper){
-                    servovaluerelic2 = servovaluerelic2;
-                }
-            }
-
-            //USE ALTERNATING VALUE PATTERN TO OPEN AND CLOSE THE TOP
-            if (gamepad1.right_bumper) {
-                servovaluetop *= (-1);
-                while (gamepad1.right_bumper) {
-                    servovaluetop = servovaluetop;
-                }
-            }
-            //USE ALTERNATING VALUE PATTERN TO OPEN AND CLOSE THE BOTTOM
-
-            if (gamepad1.left_bumper) {
-                servovaluebottom *= (-1);
-                while (gamepad1.left_bumper) {
-                    servovaluebottom = servovaluebottom;
-                }
-            }
-            //USE ALTERNATING VALUE PATTERN TO OPEN AND CLOSE BOTH CLAWS
-            if (gamepad1.right_stick_button) {
-                servovaluetop *= (-1);
-                servovaluebottom *= (-1);
-                while (gamepad1.right_stick_button) {
-                    servovaluebottom = servovaluebottom;
-                    servovaluetop = servovaluetop;
-                }
-            }
-            //LIFT THE MAST UP USING ENCODERS
-          /* if (gamepad1.dpad_up) {
-                LiftTargetPosition = Pulley.getCurrentPosition() + (6 * LiftCountsPerInch);
-                Pulley.setTargetPosition(LiftTargetPosition);
-                Pulley.setPower(1);
-
-            }
-            //MOVE THE MAST DOWN USING ENCODERS
-            else if (gamepad1.dpad_down) {
-                LiftTargetPosition = Pulley.getCurrentPosition() - (6 * LiftCountsPerInch);
-                Pulley.setTargetPosition(LiftTargetPosition);
-                Pulley.setPower(1);
-            }*/
-            //OPEN AMD CLOSE TOP CLAW
-            if (servovaluetop == -1) {
-                TopServo.setPosition(0);
-            } else if (servovaluetop == 1) {
-                TopServo.setPosition(Servo.MAX_POSITION);
-            }
-            //OPEN AMD CLOSE BOTTOM CLAW
-            if (servovaluebottom == -1) {
-                BottomServo.setPosition(.5);
-            } else if (servovaluebottom == 1) {
-                BottomServo.setPosition(Servo.MAX_POSITION);
-            }
-            if (servovaluerelic1 == -1) {
-                RelicServo.setPosition(0);
-            } else if (servovaluebottom == 1) {
-                RelicServo.setPosition(1);
-            }
-            if (servovaluerelic2 == -1) {
-                RelicServoClaw.setPosition(0);
-            } else if (servovaluebottom == 1) {
-                RelicServoClaw.setPosition(.5);
-            }
-
-
-
-
-            // Send calculated power to wheels
-            LeftDriveFront.setPower(leftPower);
-            RightDriveFront.setPower(rightPower);
-            LeftDriveBack.setPower(leftPower);
-            RightDriveBack.setPower(rightPower);
-            Pulley.setPower(pulleyPower);
-            RelicArm.setPower(relicPower);
-
-            // Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-            telemetry.addData("Top Servo Position", TopServo.getPosition());
-            telemetry.addData("Bottom Servo Position", BottomServo.getPosition());
-            telemetry.addData("Cs Servo Position", ColorSensorArm.getPosition());
-            telemetry.addData("pulley_position",Pulley.getCurrentPosition());
-            telemetry.addData("LED", bLedOn ? "On" : "Off");
-            telemetry.addData("Clear", ColorSensor.alpha());
-            telemetry.addData("Red  ", ColorSensor.red());
-            telemetry.addData("Green", ColorSensor.green());
-            telemetry.addData("Blue ", ColorSensor.blue());
-            telemetry.update();
-        }
     }
 }
 
