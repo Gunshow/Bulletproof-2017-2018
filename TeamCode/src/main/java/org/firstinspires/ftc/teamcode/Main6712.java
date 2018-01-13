@@ -96,7 +96,6 @@ public class Main6712 extends LinearOpMode {
         RightDriveBack.setDirection(DcMotor.Direction.FORWARD);
         Pulley.setDirection(DcMotor.Direction.REVERSE);
         RelicArm.setDirection(DcMotor.Direction.REVERSE);
-
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
         //Pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -104,6 +103,7 @@ public class Main6712 extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
 
         waitForStart();
+
 
         InputHandlerThread handlerG1 = new InputHandlerThread(this,gamepad1);
         InputHandlerThread handlerG2 = new InputHandlerThread(this,gamepad2);
@@ -251,6 +251,7 @@ public class Main6712 extends LinearOpMode {
         handlerG2.start();
 
         runtime.reset();
+
     }
 }
 
