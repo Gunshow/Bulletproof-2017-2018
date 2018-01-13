@@ -41,7 +41,10 @@ public class InputHandlerThread extends Thread implements Runnable {
                 callListeners(Input.Source.RIGHT_STICK_BUTTON);
             if(gamepad.left_stick_button)
                 callListeners(Input.Source.LEFT_STICK_BUTTON);
-
+            if(gamepad.a)
+                callListeners(Input.Source.A);
+            if(gamepad.b)
+                callListeners(Input.Source.B);
             for(Runnable r : iterationRunnables)
                 r.run();
         }

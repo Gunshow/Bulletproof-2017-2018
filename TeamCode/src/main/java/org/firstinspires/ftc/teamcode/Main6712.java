@@ -54,7 +54,6 @@ import java.lang.annotation.Target;
 @TeleOp(name="Main6712", group="Linear Opmode")
 //@Disabled
 public class Main6712 extends LinearOpMode {
-    private static final long DEFAULT_INPUT_COOLDOWN = 300;
     private ElapsedTime runtime = new ElapsedTime();
     private ColorSensor  ColorSensor;
     private DcMotor      LeftDriveFront = null;
@@ -62,14 +61,18 @@ public class Main6712 extends LinearOpMode {
     private DcMotor      LeftDriveBack = null;
     private DcMotor      RightDriveBack = null;
     private DcMotor      Pulley = null;
+    private DcMotor      RelicArm =  null;
     private Servo        TopServo = null;
     private Servo        BottomServo = null;
     private Servo        ColorSensorArm =null;
+    private Servo        RelicServo = null;
+    private Servo        RelicServoClaw = null;
     private int          servovaluetop = 1;
     private int          servovaluebottom = 1;
+    private int          servovaluerelic1 = 1;
+    private int          servovaluerelic2 = 1;
     private int          LiftCountsPerInch = 475;
     private int          LiftTargetPosition = 0;
-
 
     @Override
     public void runOpMode() {
@@ -84,23 +87,15 @@ public class Main6712 extends LinearOpMode {
         BottomServo =  hardwareMap.get (Servo.class, "bottom_servo");
         ColorSensorArm =  hardwareMap.get (Servo.class, "cs_servo");
         ColorSensor =hardwareMap.get(ColorSensor.class,"sensor_color");
+        RelicArm = hardwareMap.get(DcMotor.class, "relic_arm");
+        RelicServo =  hardwareMap.get (Servo.class, "relic_servo");
+        RelicServoClaw =  hardwareMap.get (Servo.class, "relic_servo");
         LeftDriveFront.setDirection(DcMotor.Direction.REVERSE);
         RightDriveFront.setDirection(DcMotor.Direction.FORWARD);
         LeftDriveBack.setDirection(DcMotor.Direction.REVERSE);
         RightDriveBack.setDirection(DcMotor.Direction.FORWARD);
         Pulley.setDirection(DcMotor.Direction.REVERSE);
-        Pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
-        // Motors labeled if your looking at the FRONT of the robot
-        // hsvValues is an array that will hold the hue, saturation, and value information.
-
-        // values is a reference to the hsvValues array.
-        //final float values[] = new float[]{0F, 0F, 0F};
-        // Most robots need the motor on one side to be reversed to drive forward
-        // Reverse the motor that runs backwards when connected directly to the battery
+        RelicArm.setDirection(DcMotor.Direction.REVERSE);
 
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
@@ -114,11 +109,32 @@ public class Main6712 extends LinearOpMode {
         InputHandlerThread handlerG2 = new InputHandlerThread(this,gamepad2);
         
         //USED TO CONTROLL COLOR SENSOR ARM IN TELEOP IF NEEDED
-        handlerG2.registerListener(Input.Source.RIGHT_BUMPER,
+        handlerG2.registerListener(Input.Source.A,
                 new Input.Listener() {
                     @Override
                     public void input() {
                         ColorSensorArm.setPosition(0);
+                    }
+                });
+        handlerG2.registerListener(Input.Source.B,
+                new Input.Listener() {
+                    @Override
+                    public void input() {
+                        ColorSensorArm.setPosition(.85d);
+                    }
+                });
+        handlerG2.registerListener(Input.Source.RIGHT_BUMPER,
+                new Input.Listener() {
+                    @Override
+                    public void input() {
+                        servovaluerelic1 *= -1;
+                    }
+                });
+        handlerG2.registerListener(Input.Source.LEFT_BUMPER,
+                new Input.Listener() {
+                    @Override
+                    public void input() {
+                        servovaluerelic2 *= -1;
                     }
                 });
         //USE ALTERNATING VALUE PATTERN TO OPEN AND CLOSE THE TOP
@@ -189,11 +205,12 @@ public class Main6712 extends LinearOpMode {
                 double drive = gamepad1.left_stick_y;
                 double turn = -gamepad1.left_stick_x;//no negative
                 double lift = gamepad1.right_stick_y;
+                double relic = gamepad2.right_stick_y;
                 // Setup a variable for each drive wheel to save power level for telemetry
                 double leftPower = Range.clip(drive + turn, -1.0, 1.0);
                 double rightPower = Range.clip(drive - turn, -1.0, 1.0);
                 double pulleyPower = Range.clip(lift, -1, 1);
-
+                double relicPower = Range.clip(relic,-1,1);
 
                 //OPEN AMD CLOSE TOP CLAW
                 TopServo.setPosition((servovaluetop == -1) ? 0.5d : Servo.MAX_POSITION);
@@ -201,12 +218,17 @@ public class Main6712 extends LinearOpMode {
                 //OPEN AMD CLOSE BOTTOM CLAW
                 BottomServo.setPosition((servovaluebottom == -1) ? 0.5d : Servo.MAX_POSITION);
 
+                RelicServo.setPosition(servovaluerelic1 == -1 ? .5d : Servo.MAX_POSITION);
+
+                RelicServoClaw.setPosition(servovaluerelic2 == -1 ? 0 : .5d);
+
                 // Send calculated power to wheels
                 LeftDriveFront.setPower(leftPower);
                 RightDriveFront.setPower(rightPower);
                 LeftDriveBack.setPower(leftPower);
                 RightDriveBack.setPower(rightPower);
                 Pulley.setPower(pulleyPower);
+                RelicArm.setPower(relicPower);
 
                 // Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 // Show the elapsed game time and wheel power.

@@ -9,7 +9,7 @@ public final class Input {
         RIGHT_STICK_BUTTON, LEFT_STICK_BUTTON,
         DPAD_UP, DPAD_DOWN,
         DPAD_LEFT, DPAD_RIGHT,
-
+        A,B
         /*...*/
     }
 
