@@ -16,7 +16,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 @TeleOp(name= "Servo Test",group= "linearOpMode")
-//@Disabled
+@Disabled
 public class ServoTest extends LinearOpMode{
     private ElapsedTime runtime = new ElapsedTime();
     private Servo rightServo = null;

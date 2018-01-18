@@ -164,25 +164,20 @@ public class AutonomousBlueside extends LinearOpMode {
         sleep(1000);                                                 //S0:Wait 5 seconds to start
         BottomServo.setPosition(.5);                                       // S1:Grab cube
         TopServo.setPosition(.5);
-        sleep(1000);                                                // pause for servos to move
-        ColorSensorArm.setPosition(.8);
         sleep(1000);
-        /*if (  ColorSensor.red() <   ColorSensor.blue()) {
-            encoderDrive(DRIVE_SPEED,5,5,3);
-            telemetry.addData("Color", "blue");}
-        if (  ColorSensor.blue() <   ColorSensor.red()) {
-            encoderDrive(DRIVE_SPEED,-5,-5,3);
-            telemetry.addData("Color", "red");}
-        ColorSensorArm.setPosition(0);*/
-        ColorSensorArm.setPosition(.75);
+        ColorSensorArm.setPosition(.85);
         sleep(1000);
         if (  ColorSensor.red() <   ColorSensor.blue()) {
-            encoderDrive(DRIVE_SPEED,5,5,3);
+            encoderDrive(DRIVE_SPEED,3,3,3);
+            ColorSensorArm.setPosition(0);
             telemetry.addData("Color", "blue");}
-        if (  ColorSensor.blue() <   ColorSensor.red()) {
-            encoderDrive(DRIVE_SPEED,-5,-5,3);
+        else if (  ColorSensor.blue() <   ColorSensor.red()) {
+            encoderDrive(DRIVE_SPEED,-3,-3,3);
+            ColorSensorArm.setPosition(0);
             telemetry.addData("Color", "red");}
-        ColorSensorArm.setPosition(0);        telemetry.addData("Path", "Complete");
+        sleep(1000);
+
+        telemetry.addData("Path", "Complete");
         telemetry.update();
     }
 //1 lift inch is = 6.25 inchs '

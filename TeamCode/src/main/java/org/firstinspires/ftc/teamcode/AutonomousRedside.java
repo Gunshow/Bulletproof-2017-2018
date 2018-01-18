@@ -165,16 +165,20 @@ public class AutonomousRedside extends LinearOpMode {
         BottomServo.setPosition(.5);                                       // S1:Grab cube
         TopServo.setPosition(.5);
         sleep(1000);// pause for servos to move
-        ColorSensorArm.setPosition(.8);
+        ColorSensorArm.setPosition(.85);
         sleep(1000);
+        Pulley.setTargetPosition(475);
+
         if (  ColorSensor.red() <   ColorSensor.blue()) {
-            encoderDrive(DRIVE_SPEED,-5,-5,3);
+            encoderDrive(DRIVE_SPEED,3,3,3);
+             ColorSensorArm.setPosition(0);
             telemetry.addData("Color", "blue");}
-        if (  ColorSensor.blue() <   ColorSensor.red()) {
-            encoderDrive(DRIVE_SPEED,5,5,3);
+        else if (  ColorSensor.blue() <   ColorSensor.red()) {
+            encoderDrive(DRIVE_SPEED,-3,-3,3);
+             ColorSensorArm.setPosition(0);
             telemetry.addData("Color", "red");}
             ColorSensorArm.setPosition(0);
-
+        sleep(1000);
         telemetry.addData("Path", "Complete");
         telemetry.update();
     }

@@ -73,6 +73,7 @@ public class Main6712 extends LinearOpMode {
     private int          servovaluerelic2 = 1;
     private int          LiftCountsPerInch = 475;
     private int          LiftTargetPosition = 0;
+    private double        tp = .15;
 
     @Override
     public void runOpMode() {
@@ -89,7 +90,7 @@ public class Main6712 extends LinearOpMode {
         ColorSensor =hardwareMap.get(ColorSensor.class,"sensor_color");
         RelicArm = hardwareMap.get(DcMotor.class, "relic_arm");
         RelicServo =  hardwareMap.get (Servo.class, "relic_servo");
-        RelicServoClaw =  hardwareMap.get (Servo.class, "relic_servo");
+        RelicServoClaw =  hardwareMap.get (Servo.class, "relic_servohand");
         LeftDriveFront.setDirection(DcMotor.Direction.REVERSE);
         RightDriveFront.setDirection(DcMotor.Direction.FORWARD);
         LeftDriveBack.setDirection(DcMotor.Direction.REVERSE);
@@ -109,7 +110,7 @@ public class Main6712 extends LinearOpMode {
         InputHandlerThread handlerG2 = new InputHandlerThread(this,gamepad2);
         
         //USED TO CONTROLL COLOR SENSOR ARM IN TELEOP IF NEEDED
-        handlerG2.registerListener(Input.Source.A,
+      handlerG2.registerListener(Input.Source.A,
                 new Input.Listener() {
                     @Override
                     public void input() {
@@ -120,7 +121,7 @@ public class Main6712 extends LinearOpMode {
                 new Input.Listener() {
                     @Override
                     public void input() {
-                        ColorSensorArm.setPosition(.85d);
+                        ColorSensorArm.setPosition(.86d);
                     }
                 });
         handlerG2.registerListener(Input.Source.RIGHT_BUMPER,
@@ -138,15 +139,8 @@ public class Main6712 extends LinearOpMode {
                     }
                 });
         //USE ALTERNATING VALUE PATTERN TO OPEN AND CLOSE THE TOP
-        handlerG2.registerListener(Input.Source.LEFT_BUMPER,
-                new Input.Listener() {
-                    @Override
-                    public void input() {
-                        ColorSensorArm.setPosition(2d / 3d);
-                    }
-                });
         //USE ALTERNATING VALUE PATTERN TO OPEN AND CLOSE THE BOTTOM
-        handlerG1.registerListener(Input.Source.RIGHT_BUMPER,
+        handlerG1.registerListener(Input.Source.LEFT_BUMPER,
                 new Input.Listener() {
                     @Override
                     public void input() {
@@ -160,6 +154,7 @@ public class Main6712 extends LinearOpMode {
                         servovaluebottom *= -1;
                     }
                 });
+
         //USE ALTERNATING VALUE PATTERN TO OPEN AND CLOSE BOTH CLAWS
         handlerG1.registerListener(Input.Source.RIGHT_STICK_BUTTON,
                 new Input.Listener() {
@@ -199,28 +194,40 @@ public class Main6712 extends LinearOpMode {
             public void run() {
                 // Choose to drive using either Tank Mode, or POV Mode
                 // Comment out the method that's not used.  The default below is POV.
-
                 // POV Mode uses left stick to go forward, and right stick to turn.
                 // - This uses basic math to combine motions and is easier to drive straight.
+
                 double drive = gamepad1.left_stick_y;
-                double turn = -gamepad1.left_stick_x;//no negative
+                gamepad1.setJoystickDeadzone((float) .1);
+                double turn = -gamepad1.left_stick_x;//no negative'
                 double lift = gamepad1.right_stick_y;
                 double relic = gamepad2.right_stick_y;
                 // Setup a variable for each drive wheel to save power level for telemetry
-                double leftPower = Range.clip(drive + turn, -1.0, 1.0);
-                double rightPower = Range.clip(drive - turn, -1.0, 1.0);
+                double leftPower = Range.clip(drive + turn, -1.0+(gamepad1.right_trigger), 1.0-(gamepad1.right_trigger));
+                double rightPower = Range.clip(drive - turn, -1.0+(gamepad1.right_trigger), 1.0-(gamepad1.right_trigger));
                 double pulleyPower = Range.clip(lift, -1, 1);
                 double relicPower = Range.clip(relic,-1,1);
-
                 //OPEN AMD CLOSE TOP CLAW
-                TopServo.setPosition((servovaluetop == -1) ? 0.5d : Servo.MAX_POSITION);
-
+               // TopServo.setPosition((servovaluetop == -1) ? 0.25d : Servo.MAX_POSITION);
                 //OPEN AMD CLOSE BOTTOM CLAW
-                BottomServo.setPosition((servovaluebottom == -1) ? 0.5d : Servo.MAX_POSITION);
+               // BottomServo.setPosition((servovaluebottom == -1) ? 0.65d : Servo.MAX_POSITION);
+              /*  if(gamepad1.a){
+                tp = (tp)+(.01);
+                    RelicServoClaw.setPosition(tp);
 
-                RelicServo.setPosition(servovaluerelic1 == -1 ? .5d : Servo.MAX_POSITION);
+                }
+                else if(gamepad1.b){
+                    tp = (tp)-(.01);
+                    RelicServoClaw.setPosition(tp);
 
-                RelicServoClaw.setPosition(servovaluerelic2 == -1 ? 0 : .5d);
+                }*/
+                TopServo.setPosition(servovaluetop == -1 ? .18d : Servo.MAX_POSITION);
+
+                BottomServo.setPosition(servovaluebottom == -1 ? .01d : Servo.MAX_POSITION);
+
+                RelicServo.setPosition(servovaluerelic1 == -1 ? 0d : Servo.MAX_POSITION);
+
+               RelicServoClaw.setPosition(servovaluerelic2 == -1 ? 0 : .2d);
 
                 // Send calculated power to wheels
                 LeftDriveFront.setPower(leftPower);
@@ -238,7 +245,9 @@ public class Main6712 extends LinearOpMode {
                 telemetry.addData("Bottom Servo Position", BottomServo.getPosition());
                 telemetry.addData("Cs Servo Position", ColorSensorArm.getPosition());
                 telemetry.addData("pulley_position",Pulley.getCurrentPosition());
+                telemetry.addData("Rtvalue",gamepad1.right_trigger);
                 //telemetry.addData("LED", bLedOn ? "On" : "Off");
+                telemetry.addData("Servo",tp);
                 telemetry.addData("Clear", ColorSensor.alpha());
                 telemetry.addData("Red  ", ColorSensor.red());
                 telemetry.addData("Green", ColorSensor.green());
@@ -250,6 +259,7 @@ public class Main6712 extends LinearOpMode {
         handlerG1.start();
         handlerG2.start();
 
+        while(this.opModeIsActive()){}
         runtime.reset();
 
     }

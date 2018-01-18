@@ -55,14 +55,17 @@ public class HardwareMain6712
 {
     /* Public OpMode members. */
     public ElapsedTime runtime = new ElapsedTime();
-    public DcMotor LeftDriveFront = null;
-    public DcMotor RightDriveFront = null;
-    public DcMotor LeftDriveBack = null;
-    public DcMotor RightDriveBack = null;
-    public DcMotor Pulley = null;
-    public Servo   TopServo = null;
-    public Servo   BottomServo = null;
-    public Servo   ColorSensorArm =null;
+    private DcMotor      LeftDriveFront = null;
+    private DcMotor      RightDriveFront = null;
+    private DcMotor      LeftDriveBack = null;
+    private DcMotor      RightDriveBack = null;
+    private DcMotor      Pulley = null;
+    private DcMotor      RelicArm =  null;
+    private Servo        TopServo = null;
+    private Servo        BottomServo = null;
+    private Servo        ColorSensorArm =null;
+    private Servo        RelicServo = null;
+    private Servo        RelicServoClaw = null;
     public int     servovaluetop = 1;
     public int     servovaluebottom = 1;
     public int     LiftCountsPerInch = 475;

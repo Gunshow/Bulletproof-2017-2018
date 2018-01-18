@@ -24,27 +24,16 @@ public class InputHandlerThread extends Thread implements Runnable {
     @Override
     public void run(){
         while(op.opModeIsActive()){
-
-            if(gamepad.left_bumper)
-                callListeners(Input.Source.LEFT_BUMPER);
-            if(gamepad.right_bumper)
-                callListeners(Input.Source.RIGHT_BUMPER);
-            if(gamepad.dpad_down)
-                callListeners(Input.Source.DPAD_DOWN);
-            if(gamepad.dpad_up)
-                callListeners(Input.Source.DPAD_UP);
-            if(gamepad.dpad_left)
-                callListeners(Input.Source.DPAD_LEFT);
-            if(gamepad.dpad_right)
-                callListeners(Input.Source.DPAD_RIGHT);
-            if(gamepad.right_stick_button)
-                callListeners(Input.Source.RIGHT_STICK_BUTTON);
-            if(gamepad.left_stick_button)
-                callListeners(Input.Source.LEFT_STICK_BUTTON);
-            if(gamepad.a)
-                callListeners(Input.Source.A);
-            if(gamepad.b)
-                callListeners(Input.Source.B);
+                callListeners(gamepad.left_bumper,Input.Source.LEFT_BUMPER);
+                callListeners(gamepad.right_bumper,Input.Source.RIGHT_BUMPER);
+                callListeners(gamepad.dpad_down,Input.Source.DPAD_DOWN);
+                callListeners(gamepad.dpad_up,Input.Source.DPAD_UP);
+                callListeners(gamepad.dpad_left,Input.Source.DPAD_LEFT);
+                callListeners(gamepad.dpad_right,Input.Source.DPAD_RIGHT);
+                callListeners(gamepad.right_stick_button,Input.Source.RIGHT_STICK_BUTTON);
+                callListeners(gamepad.left_stick_button,Input.Source.LEFT_STICK_BUTTON);
+                callListeners(gamepad.a,Input.Source.A);
+                callListeners(gamepad.b,Input.Source.B);
             for(Runnable r : iterationRunnables)
                 r.run();
         }
@@ -54,12 +43,15 @@ public class InputHandlerThread extends Thread implements Runnable {
         wrappers.add(new Input.Wrapper(source, listener));
     }
 
-    private void callListeners(Input.Source source){
-        for (Input.Wrapper wrapper : wrappers)
-            if(wrapper.source == source)
-                wrapper.callInput();
-            else
-                wrapper.lastInput = false;
+    private void callListeners(boolean active, Input.Source source){
+            for (Input.Wrapper wrapper : wrappers)
+                if(wrapper.source == source)
+                    if (active) {
+                        wrapper.callInput();
+                    }else
+                        wrapper.lastInput = false;
+
+
     }
 
     public void addIterationRunnable(Runnable runnable){

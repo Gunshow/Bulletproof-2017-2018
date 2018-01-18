@@ -88,6 +88,7 @@ public class Gyrotest extends LinearOpMode {
 
             double raw = gyro.readRawVoltage();
             double bias = gyro.getBiasVoltage();
+            telemetry.addData("Angle", gyro.getAngularVelocity(AngleUnit.DEGREES).zRotationRate);
             telemetry.addData("rate", "%.4f deg/s",      gyroscope.getAngularVelocity(AngleUnit.DEGREES).zRotationRate);
             telemetry.addData("raw ", "%.4fv",           raw);
             telemetry.addData("bias", "%.4fv",           bias);
