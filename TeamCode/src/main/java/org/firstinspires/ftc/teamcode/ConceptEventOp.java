@@ -4,6 +4,7 @@ import android.graphics.Path;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -30,7 +31,7 @@ import java.lang.annotation.Target;
 
 @Autonomous(name = "Concept: NullOp", group = "Concept")
 //@Disabled
-public class ConceptEventOp extends OpMode {
+public class ConceptEventOp extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -46,6 +47,16 @@ public class ConceptEventOp extends OpMode {
     private Servo        ColorSensorArm =null;
     private Servo        RelicServo = null;
     private Servo        RelicServoClaw = null;
+    static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: AndyMark Motor Encoder
+    static final double     DRIVE_GEAR_REDUCTION    = .5 ;     // This is < 1.0 if geared UP
+    static final double     WHEEL_DIAMETER_INCHES   = 3.75 ;     // For figuring circumference
+    static final double     Lift_DIAMETER_INCHES    = .75 ;     // For figuring circumference
+    static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
+            (WHEEL_DIAMETER_INCHES * 3.1415);
+    static final double     COUNTS_PER_INCH_Lift    = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
+            (Lift_DIAMETER_INCHES * 3.1415) ;
+    static final double     DRIVE_SPEED             = 0.6;
+    static final double     TURN_SPEED              = 0.5;
     private int          servovaluetop = 1;
     private int          servovaluebottom = 1;
     private int          servovaluerelic1 = 1;
@@ -65,7 +76,7 @@ public class ConceptEventOp extends OpMode {
     private String path = ("pathV" + "pathCS");
 
     @Override
-    public void init() {
+    public void runOpMode() {
         LeftDriveFront = hardwareMap.get(DcMotor.class, "left_drive");
         RightDriveFront = hardwareMap.get(DcMotor.class, "right_drive");
         LeftDriveBack = hardwareMap.get(DcMotor.class, "left_drive2");
@@ -95,23 +106,21 @@ public class ConceptEventOp extends OpMode {
         Target.setName("Calc");
         relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
 
-    }
 
-    @Override
-    public void start() {
+
+
 
         runtime.reset();
         relicTrackables.activate();
         visionTargets.activate();
 
-    }
 
-    @Override
-    public void loop() {
+
+        waitForStart();
         RelicRecoveryVuMark vuMark = RelicRecoveryVuMark.from(relicTemplate);
         listener = (VuforiaTrackableDefaultListener) Target.getListener();
         telemetry.addData("Tracking " + Target.getName(), listener.isVisible());
-        if(listener.isVisible()){
+    /*    if(listener.isVisible()){
             TopServo.setPosition(1);
             BottomServo.setPosition(.525);
         }
@@ -121,7 +130,7 @@ public class ConceptEventOp extends OpMode {
         }
         else{TopServo.setPosition(1);
             BottomServo.setPosition(1);
-        }
+        }*/
         if (vuMark != RelicRecoveryVuMark.UNKNOWN) {
 
             OpenGLMatrix pose = ((VuforiaTrackableDefaultListener) relicTemplate.getListener()).getPose();
@@ -129,31 +138,15 @@ public class ConceptEventOp extends OpMode {
             telemetry.addData("Tracking " + Target.getName(), listener.isVisible());
 
             if (vuMark == RelicRecoveryVuMark.RIGHT){
-                /* if(listener.isVisible()){
-                     LeftDriveBack.setPower(0);
-                     RightDriveBack.setPower(0);
-                     LeftDriveFront.setPower(0);
-                     RightDriveFront.setPower(0);
-                 }
-                else if(!listener.isVisible()){
-                    LeftDriveBack.setPower(-.1);
-                    RightDriveBack.setPower(-.1);
-                    LeftDriveFront.setPower(-.1);
-                    RightDriveFront.setPower(-.1);
-                }*/
+                encoderDrive(DRIVE_SPEED,6,6,3);
             telemetry.addData("VuMark", "Right");}
-            else if (vuMark == RelicRecoveryVuMark.CENTER)
-            {
-                LeftDriveBack.setPower(0);
-                RightDriveBack.setPower(0);
-                LeftDriveFront.setPower(0);
-                RightDriveFront.setPower(0);
+
+            else if (vuMark == RelicRecoveryVuMark.CENTER) {
+                encoderDrive(DRIVE_SPEED,6,-6,3);
                 telemetry.addData("VuMark", "Center");}
+
             else if (vuMark == RelicRecoveryVuMark.LEFT){
-                LeftDriveBack.setPower(-.1);
-                RightDriveBack.setPower(-.1);
-                LeftDriveFront.setPower(-.1);
-                RightDriveFront.setPower(-.1);
+                encoderDrive(DRIVE_SPEED,-6,-6,3);
                 telemetry.addData("VuMark", "Left");
             }
 
@@ -180,5 +173,86 @@ public class ConceptEventOp extends OpMode {
         }
         telemetry.update();
     }
+    private void encoderDrive(double speed,
+                              double leftInches,
+                              double rightInches,
+                              // double liftInches,
+                              double timeoutS) {
 
+        int newLeftTarget;
+        int newRightTarget;
+        int newLeftTarget2;
+        int newRightTarget2;
+        //   int newLiftTarget;
+        // Ensure that the opmode is still active
+        if (opModeIsActive()) {
+
+            // Determine new target position, and pass to motor controller
+
+            newLeftTarget = LeftDriveFront.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
+            newRightTarget = RightDriveFront.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+            newLeftTarget2 = LeftDriveBack.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
+            newRightTarget2 = RightDriveBack.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+            //newLiftTarget = Pulley.getCurrentPosition()  + (int)(liftInches * COUNTS_PER_INCH_Lift);
+            LeftDriveFront.setTargetPosition(newLeftTarget);
+            RightDriveFront.setTargetPosition(newRightTarget);
+            LeftDriveBack.setTargetPosition(newLeftTarget2);
+            RightDriveBack.setTargetPosition(newRightTarget2);
+            //    Pulley.setTargetPosition(newLiftTarget);
+
+            // Turn On RUN_TO_POSITION
+            LeftDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            RightDriveFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            LeftDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            RightDriveBack.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            // Pulley.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            // reset the timeout time and start motion.
+            runtime.reset();
+            LeftDriveFront.setPower(Math.abs(speed));
+            RightDriveFront.setPower(Math.abs(speed));
+            LeftDriveBack.setPower(Math.abs(speed));
+            RightDriveBack.setPower(Math.abs(speed));
+            //Pulley.setPower(Math.abs(speed));
+
+            // keep looping while we are still active, and there is time left, and both motors are running.
+            // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
+            // its target position, the motion will stop.  This is "safer" in the event that the robot will
+            // always end the motion as soon as possible.
+            // However, if you require that BOTH motors have finished their moves before the robot continues
+            // onto the next step, use (isBusy() || isBusy()) in the loop test.
+            while (opModeIsActive() &&
+                    (runtime.seconds() < timeoutS) &&
+                    (LeftDriveFront.isBusy() && RightDriveFront.isBusy()// && //Pulley.isBusy()
+                            && LeftDriveBack.isBusy() && RightDriveBack.isBusy())) {
+
+                // Display it for the driver.
+                telemetry.addData("Path1",  "Running to %7d :%7d", newLeftTarget,  newRightTarget, newLeftTarget2,  newRightTarget2);//newLiftTarget
+                telemetry.addData("Path2",  "Running at %7d :%7d",
+                        //Pulley.getCurrentPosition(),
+                        LeftDriveFront.getCurrentPosition(),
+                        RightDriveFront.getCurrentPosition(),
+                        LeftDriveBack.getCurrentPosition(),
+                        RightDriveBack.getCurrentPosition());
+                telemetry.update();
+            }
+
+            // Stop all motion;
+            LeftDriveFront.setPower(0);
+            RightDriveFront.setPower(0);
+            LeftDriveBack.setPower(0);
+            RightDriveBack.setPower(0);
+            //  Pulley.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            LeftDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            LeftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            RightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            // Pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            //  sleep(250);   // optional pause after each move
+
+        }
+    }
 }

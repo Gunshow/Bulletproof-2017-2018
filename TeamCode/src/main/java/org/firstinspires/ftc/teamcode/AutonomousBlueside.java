@@ -95,7 +95,7 @@ public class AutonomousBlueside extends LinearOpMode {
             (WHEEL_DIAMETER_INCHES * 3.1415);
     static final double     COUNTS_PER_INCH_Lift    = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (Lift_DIAMETER_INCHES * 3.1415) ;
-    static final double     DRIVE_SPEED             = 0.6;
+    static final double     DRIVE_SPEED             = 0.2;
     static final double     TURN_SPEED              = 0.5;
 
     @Override
@@ -105,12 +105,12 @@ public class AutonomousBlueside extends LinearOpMode {
         LeftDriveFront = hardwareMap.get(DcMotor.class, "left_drive");
         RightDriveFront = hardwareMap.get(DcMotor.class, "right_drive");
         LeftDriveBack = hardwareMap.get(DcMotor.class, "left_drive2");
-        RightDriveBack =  hardwareMap.get (DcMotor.class, "right_drive2");
-        Pulley =  hardwareMap.get (DcMotor.class, "pulley");
-        TopServo  =  hardwareMap.get (Servo.class, "top_servo");
-        BottomServo =  hardwareMap.get (Servo.class, "bottom_servo");
-        ColorSensorArm =  hardwareMap.get (Servo.class, "cs_servo");
-        ColorSensor =hardwareMap.get(ColorSensor.class,"sensor_color");
+        RightDriveBack = hardwareMap.get(DcMotor.class, "right_drive2");
+        Pulley = hardwareMap.get(DcMotor.class, "pulley");
+        TopServo = hardwareMap.get(Servo.class, "top_servo");
+        BottomServo = hardwareMap.get(Servo.class, "bottom_servo");
+        ColorSensorArm = hardwareMap.get(Servo.class, "cs_servo");
+        ColorSensor = hardwareMap.get(ColorSensor.class, "sensor_color");
         LeftDriveFront.setDirection(DcMotor.Direction.REVERSE);
         RightDriveFront.setDirection(DcMotor.Direction.FORWARD);
         LeftDriveBack.setDirection(DcMotor.Direction.REVERSE);
@@ -134,15 +134,14 @@ public class AutonomousBlueside extends LinearOpMode {
          * Initialize the drive system variables.
          * The init() method of the hardware class does all the work here
          */
-        
+
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
 
 
-
         // Send telemetry message to indicate successful Encoder reset
-        telemetry.addData("Path0",  "Starting at %7d :%7d",
+        telemetry.addData("Path0", "Starting at %7d :%7d",
                 LeftDriveFront.getCurrentPosition(),
                 RightDriveFront.getCurrentPosition(),
                 LeftDriveBack.getCurrentPosition(),
@@ -162,20 +161,34 @@ public class AutonomousBlueside extends LinearOpMode {
         TopServo.setPosition(1);
         BottomServo.setPosition(1);
         sleep(1000);                                                 //S0:Wait 5 seconds to start
-        BottomServo.setPosition(.5);                                       // S1:Grab cube
-        TopServo.setPosition(.5);
+        BottomServo.setPosition(.01);                                       // S1:Grab cube
+        TopServo.setPosition(.18);
         sleep(1000);
         ColorSensorArm.setPosition(.85);
         sleep(1000);
-        if (  ColorSensor.red() <   ColorSensor.blue()) {
-            encoderDrive(DRIVE_SPEED,3,3,3);
+        Pulley.setTargetPosition(475);
+        sleep(1000);
+        {if (  ColorSensor.red() <   ColorSensor.blue()) {
+            encoderDrive(DRIVE_SPEED,-2,-2,2);
             ColorSensorArm.setPosition(0);
+            sleep(1000);
+            encoderDrive(DRIVE_SPEED,40,40,5);
             telemetry.addData("Color", "blue");}
         else if (  ColorSensor.blue() <   ColorSensor.red()) {
-            encoderDrive(DRIVE_SPEED,-3,-3,3);
+            encoderDrive(DRIVE_SPEED,2,2,3);
             ColorSensorArm.setPosition(0);
-            telemetry.addData("Color", "red");}
+            sleep(1000);
+            encoderDrive(DRIVE_SPEED, 34,34,5);
+            telemetry.addData("Color", "red");}}
+
         sleep(1000);
+        encoderDrive(TURN_SPEED,-35,-35,3);
+        encoderDrive(DRIVE_SPEED,12,12,3);
+        TopServo.setPosition(1);
+        BottomServo.setPosition(1);
+        encoderDrive(DRIVE_SPEED,-18,-18,3);
+        encoderDrive(TURN_SPEED,-70,70,4);
+        encoderDrive(DRIVE_SPEED,-18,-18, 2);
 
         telemetry.addData("Path", "Complete");
         telemetry.update();
