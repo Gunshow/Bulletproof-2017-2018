@@ -36,6 +36,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -96,7 +97,7 @@ public class DriveByGyro extends LinearOpMode {
     public int          servovaluebottom = 1;
     public int          LiftCountsPerInch = 475;
     public int          LiftTargetPosition = 0;                       // Additional Gyro device
-    public HiTechnicNxtGyroSensor gyro;
+    public ModernRoboticsI2cGyro gyro = null;
     static final double     COUNTS_PER_MOTOR_REV    = 1220 ;    // eg: TETRIX Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = .5 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 3.875 ;     // For figuring circumference
@@ -120,7 +121,7 @@ public class DriveByGyro extends LinearOpMode {
          * Initialize the standard drive system variables.
          * The init() method of the hardware class does most of the work here
          */
-        gyro = (HiTechnicNxtGyroSensor) hardwareMap.gyroSensor.get("gyro");
+        gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
         LeftDriveFront = hardwareMap.get(DcMotor.class, "left_drive");
         RightDriveFront = hardwareMap.get(DcMotor.class, "right_drive");
         LeftDriveBack = hardwareMap.get(DcMotor.class, "left_drive2");
@@ -129,12 +130,14 @@ public class DriveByGyro extends LinearOpMode {
         RightDriveFront.setDirection(DcMotor.Direction.REVERSE);
         LeftDriveBack.setDirection(DcMotor.Direction.FORWARD);
         RightDriveBack.setDirection(DcMotor.Direction.REVERSE);
+        Pulley.setDirection(DcMotor.Direction.FORWARD);
 
         // Ensure the robot it stationary, then reset the encoders and calibrate the gyro.
           LeftDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         RightDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         LeftDriveBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         RightDriveBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        Pulley.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         // Send telemetry message to alert driver that we are calibrating;
         telemetry.addData(">", "Calibrating Gyro");    //
         telemetry.update();
@@ -154,10 +157,11 @@ public class DriveByGyro extends LinearOpMode {
          RightDriveFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         LeftDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         RightDriveBack.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Pulley.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         // Wait for the game to start (Display Gyro value), and reset gyro before we move..
         while (!isStarted()) {
-            telemetry.addData(">", "Robot Heading(.04f)", gyro.getAngularVelocity(AngleUnit.DEGREES).zRotationRate);
+            telemetry.addData(">", "Robot Heading = %d", gyro.getIntegratedZValue());
             telemetry.update();
         }
 
@@ -166,9 +170,11 @@ public class DriveByGyro extends LinearOpMode {
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
         // Put a hold after each turn
-        gyroDrive(DRIVE_SPEED, 1.0, 0.0);    // Drive FWD 48 inches
+        gyroDrive(DRIVE_SPEED, 18, 0.0);    // Drive FWD 48 inches
         gyroTurn( TURN_SPEED, -90);
-        gyroTurn(DRIVE_SPEED,90);// Turn  CCW to -45 Degrees
+        gyroHold(TURN_SPEED,-90,.5);
+        gyroDrive(DRIVE_SPEED,18,0);// Turn  CCW to -45 Degrees
+        Pulley.setTargetPosition(6*(LiftCountsPerInch));
        /* gyroHold( TURN_SPEED, -45.0, 0.5);    // Hold -45 Deg heading for a 1/2 second
         gyroDrive(DRIVE_SPEED, 12.0, -45.0);  // Drive FWD 12 inches at 45 degrees
         gyroTurn( TURN_SPEED,  45.0);         // Turn  CW  to  45 Degrees
@@ -395,7 +401,7 @@ public class DriveByGyro extends LinearOpMode {
         double robotError;
 
         // calculate error in -179 to +180 range  (
-        robotError = targetAngle - gyro.getAngularVelocity(AngleUnit.DEGREES).zRotationRate;
+        robotError = targetAngle - gyro.getIntegratedZValue();
         while (robotError > 180)  robotError -= 360;
         while (robotError <= -180) robotError += 360;
         return robotError;

@@ -167,9 +167,9 @@ public class AutonomousBlueside extends LinearOpMode {
         ColorSensorArm.setPosition(.85);
         sleep(1000);
         Pulley.setTargetPosition(475);
-        sleep(1000);
-        {if (  ColorSensor.red() <   ColorSensor.blue()) {
-            encoderDrive(DRIVE_SPEED,-2,-2,2);
+        sleep(2000);
+        if (  ColorSensor.red() <   ColorSensor.blue())
+            {encoderDrive(DRIVE_SPEED,-2,-2,2);
             ColorSensorArm.setPosition(0);
             sleep(1000);
             encoderDrive(DRIVE_SPEED,40,40,5);
@@ -179,10 +179,10 @@ public class AutonomousBlueside extends LinearOpMode {
             ColorSensorArm.setPosition(0);
             sleep(1000);
             encoderDrive(DRIVE_SPEED, 34,34,5);
-            telemetry.addData("Color", "red");}}
+            telemetry.addData("Color", "red");}
 
         sleep(1000);
-        encoderDrive(TURN_SPEED,-35,-35,3);
+        encoderDrive(TURN_SPEED,35,-35,3);
         encoderDrive(DRIVE_SPEED,12,12,3);
         TopServo.setPosition(1);
         BottomServo.setPosition(1);
