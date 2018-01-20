@@ -126,12 +126,16 @@ public class DriveByGyro extends LinearOpMode {
         RightDriveFront = hardwareMap.get(DcMotor.class, "right_drive");
         LeftDriveBack = hardwareMap.get(DcMotor.class, "left_drive2");
         RightDriveBack =  hardwareMap.get (DcMotor.class, "right_drive2");
-        LeftDriveFront.setDirection(DcMotor.Direction.FORWARD);
-        RightDriveFront.setDirection(DcMotor.Direction.REVERSE);
-        LeftDriveBack.setDirection(DcMotor.Direction.FORWARD);
-        RightDriveBack.setDirection(DcMotor.Direction.REVERSE);
-        Pulley.setDirection(DcMotor.Direction.FORWARD);
-
+        Pulley = hardwareMap.get(DcMotor.class, "pulley");
+        try {
+            LeftDriveFront.setDirection(DcMotor.Direction.FORWARD);
+            RightDriveFront.setDirection(DcMotor.Direction.REVERSE);
+            LeftDriveBack.setDirection(DcMotor.Direction.FORWARD);
+            RightDriveBack.setDirection(DcMotor.Direction.REVERSE);
+            Pulley.setDirection(DcMotor.Direction.FORWARD);
+        }catch(NullPointerException e){
+            e.printStackTrace(System.out);
+        }
         // Ensure the robot it stationary, then reset the encoders and calibrate the gyro.
           LeftDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         RightDriveFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -170,11 +174,19 @@ public class DriveByGyro extends LinearOpMode {
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
         // Put a hold after each turn
+        // Pulley.setTargetPosition(6*(LiftCountsPerInch));
         gyroDrive(DRIVE_SPEED, 18, 0.0);    // Drive FWD 48 inches
         gyroTurn( TURN_SPEED, -90);
         gyroHold(TURN_SPEED,-90,.5);
         gyroDrive(DRIVE_SPEED,18,0);// Turn  CCW to -45 Degrees
-        Pulley.setTargetPosition(6*(LiftCountsPerInch));
+        gyroTurn( TURN_SPEED, -180);
+        gyroHold(TURN_SPEED,-180,.5)
+        ;gyroDrive(DRIVE_SPEED, 18, 0.0);    // Drive FWD 48 inches
+        gyroTurn( TURN_SPEED, -270);
+        gyroHold(TURN_SPEED,-270,.5);
+        gyroDrive(DRIVE_SPEED, 18, 0.0);    // Drive FWD 48 inches
+        gyroTurn( TURN_SPEED, -0);
+        gyroHold(TURN_SPEED,-0,.5);
        /* gyroHold( TURN_SPEED, -45.0, 0.5);    // Hold -45 Deg heading for a 1/2 second
         gyroDrive(DRIVE_SPEED, 12.0, -45.0);  // Drive FWD 12 inches at 45 degrees
         gyroTurn( TURN_SPEED,  45.0);         // Turn  CW  to  45 Degrees
